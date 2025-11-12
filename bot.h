@@ -183,4 +183,43 @@ public:
 	}
 };
 
+void startBot() {
+	Responder responderForUtterances;
+	responderForUtterances.initializeResponder("Utterances.txt");
+	cout << "Loading chatbot resources...\n";
+	cout << "Chatbot initialized successfully!\n";
+	cout << "====================================\n";
+	cout << "   LOAN PROCESSING CHATBOT\n";
+	cout << "====================================\n\n";
+	cout << "Welcome! How can I assist you today?\n\n";
+	string input = "";
+	HomeLoan homeLoan;
+	homeLoan.initializeHomeLoan();
+
+	while (true) {
+		cout << "You: ";
+		cin >> input;
+		cout << endl;
+		if (input == "X" || input == "x") {
+			cout << "Exiting...\n";
+			break;
+		}
+		responderForUtterances.respondToUser(input);
+		cout << endl;
+		if (input == "H" || input == "h") {
+			string area = "";
+			while (area[0] < '1' || area[0] > '4') {
+				cout << "You: ";
+				cin >> area;
+				cout << endl;
+				if (area[0] >= '1' && area[0] <= '4') {
+					homeLoan.displayHomes(stoi(area));
+				}
+				else {
+					cout << "Invalid area selected. Please try again.\n";
+				}
+			}
+		}
+	}
+}
 
