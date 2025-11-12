@@ -181,6 +181,19 @@ public:
 		}
 		return;
 	}
+	void generateInstallmentPlan(int areaNumber) {
+		for (int i = 0; i < numberOfLines; i++) {
+			if (area[i] == areaNumber) {
+				int monthlyInstallment = (price[i] - downPayment[i]) / installments[i];
+				cout << "\nFor home size " << size[i] << " Marla in Area " << area[i] << ":\n";
+				cout << "Price: " << price[i] << "\n";
+				cout << "Down Payment: " << downPayment[i] << "\n";
+				cout << "Installments: " << installments[i] << " months\n";
+				cout << "Monthly Installment: " << monthlyInstallment << endl;
+				cout << "------------------------\n\n";
+			}
+		}
+	}
 };
 
 void startBot() {
@@ -214,6 +227,11 @@ void startBot() {
 				cout << endl;
 				if (area[0] >= '1' && area[0] <= '4') {
 					homeLoan.displayHomes(stoi(area));
+					cout << "\nWould you like an installment plan? Y/n  ";
+					cin >> input;
+					if (input == "y" || input == "Y") {
+						homeLoan.generateInstallmentPlan(stoi(area));
+					}
 				}
 				else {
 					cout << "Invalid area selected. Please try again.\n";
@@ -222,4 +240,5 @@ void startBot() {
 		}
 	}
 }
+
 
