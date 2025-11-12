@@ -143,4 +143,23 @@ public:
 		}
 		return value;
 	}
+		void displayHomes(int areaNumber) {
+		int homesAvaiable = 0;
+		for (int i = 0; i < numberOfLines; i++) {
+			if (area[i] == areaNumber) {
+				homesAvaiable++;
+				cout << "Area: " << area[i] << endl;
+				cout << "Size: " << size[i] << " Marla\n";
+				cout << "Installments: " << installments[i] << endl;
+				cout << "Price: " << price[i] << endl;
+				cout << "Down Payement: " << downPayment[i] << endl;
+				cout << endl;
+			}
+		}
+		if (homesAvaiable == 0) {
+			cout << "No Homes Available in This Area\n\n";
+		}
+		return;
+	}
 };
+
