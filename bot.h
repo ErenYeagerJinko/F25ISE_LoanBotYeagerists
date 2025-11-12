@@ -59,6 +59,26 @@ public:
 		file.close();
 		return;
 	}
+	void respondToUser(string input) {
+		bool foundResponse = false;
+		for (char &c : input) {
+			if (c == '\0') {
+				break;
+			}
+			c = tolower(c);
+		}
+		for (int i = 0; i < numberOfLines; i++) {
+			if (input == userInput[i]) {
+				cout << systemResponse[i] << endl;
+				foundResponse = true;
+			}
+		}
+		if (!foundResponse) {
+			foundResponse = true;
+			respondToUser("*");
+		}
+		return;
+	}
 };
 
 class HomeLoan {
@@ -143,7 +163,7 @@ public:
 		}
 		return value;
 	}
-		void displayHomes(int areaNumber) {
+	void displayHomes(int areaNumber) {
 		int homesAvaiable = 0;
 		for (int i = 0; i < numberOfLines; i++) {
 			if (area[i] == areaNumber) {
@@ -162,4 +182,5 @@ public:
 		return;
 	}
 };
+
 
