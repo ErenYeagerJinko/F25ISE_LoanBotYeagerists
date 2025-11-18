@@ -6,6 +6,7 @@
 #include <direct.h>
 #include <cctype>
 #include <algorithm>
+#include <sstream>
 using namespace std;
 
 int numberOfLinesInFile(string fileName) {
@@ -635,6 +636,10 @@ ExistingLoan existingLoan;
 Referee referee1, referee2;
 ApplicantImages images;
 string applicationID;
+string applicationStatus; 
+int selectedArea;      
+int selectedHomeSize;
+
 
 LoanSeeker() {
     hasExistingLoan = false;
@@ -643,6 +648,9 @@ LoanSeeker() {
     avgElectricityBill = 0.0f;
     currentElectricityBill = 0.0f;
     numberOfDependents = 0;
+	applicationStatus = "submitted";
+	selectedArea = 0;
+	selectedHomeSize = 0;
 }
 
     void inputFullName() {
@@ -1001,6 +1009,44 @@ void inputImagePaths() {
     cout << "\nImage paths recorded successfully!\n";
 }
 
+void displaySummary() {
+	cout << "\n====================================\n";
+	cout << "   APPLICATION SUMMARY\n";
+	cout << "====================================\n\n";
+	cout << "Application ID: " << applicationID << endl;
+	cout << "Full Name: " << fullName << endl;
+	cout << "Father's Name: " << fatherName << endl;
+	cout << "CNIC: " << cnic << endl;
+	cout << "Contact: " << contactNumber << endl;
+	cout << "Email: " << email << endl;
+	cout << "Employment: " << employmentStatus << endl;
+	cout << "Annual Income: " << annualIncome << endl;
+	cout << "Selected Area: " << selectedArea << endl;
+	cout << "Selected Home Size: " << selectedHomeSize << " Marla" << endl;
+	cout << "\nExisting Loan: " << (hasExistingLoan ? "Yes" : "No") << endl;
+	if (hasExistingLoan) {
+		cout << "  Bank: " << existingLoan.bankName << endl;
+		cout << "  Category: " << existingLoan.loanCategory << endl;
+		cout << "  Status: " << existingLoan.loanPeriodStatus << endl;
+	}
+	cout << "\nReferee 1: " << referee1.name << " (" << referee1.cnic << ")" << endl;
+	cout << "Referee 2: " << referee2.name << " (" << referee2.cnic << ")" << endl;
+	cout << "\n====================================\n";
+}
+
+bool confirmSubmission() {
+	string response;
+	while (true) {
+		cout << "\nDo you want to submit this application? (yes/no): ";
+		getline(cin, response);
+		toLowerCase(response);
+		if (validateYesNo(response)) {
+			return (response == "yes" || response == "y");
+		}
+		cout << "Invalid input! Please enter 'yes' or 'no'.\n";
+	}
+}
+
 void saveToFile() {
     ofstream file("applications.txt", ios::app);
     if (!file) {
@@ -1008,7 +1054,8 @@ void saveToFile() {
         return;
     }
 
-    file << fullName << "#"
+    file << applicationID << "#"
+		<< fullName << "#"
         << fatherName << "#"
         << postalAddress << "#"
         << contactNumber << "#"
@@ -1041,16 +1088,166 @@ void saveToFile() {
         << images.cnicFrontPath << "#"
         << images.cnicBackPath << "#"
         << images.electricityBillPath << "#"
-        << images.salarySlipPath << endl;
+        << images.salarySlipPath << "#"
+		<< applicationStatus << "#"  
+		<< selectedArea << "#"     
+		<< selectedHomeSize << endl;
 
     file.close();
     cout << "\n====================================\n";
     cout << "Application submitted successfully!\n";
     cout << "Application ID: " << applicationID << endl;
+	cout << "Status: " << applicationStatus << endl;
     cout << "====================================\n";
+	}
+};
+
+void checkApplicationsByCNIC(const string& cnic) {
+	ifstream file("applications.txt");
+	if (!file) {
+		cout << "No applications file found.\n";
+		return;
+	}
+
+	int submitted = 0, approved = 0, rejected = 0;
+	string line;
+
+	while (getline(file, line)) {
+		stringstream ss(line);
+		string token;
+		int fieldCount = 0;
+		string fileCnic, status;
+
+		while (getline(ss, token, '#')) {
+			fieldCount++;
+			if (fieldCount == 7) {
+				fileCnic = token;
+			}
+			if (fieldCount == 36) {
+				status = token;
+			}
+		}
+
+		if (fileCnic == cnic) {
+			if (status == "submitted") submitted++;
+			else if (status == "approved") approved++;
+			else if (status == "rejected") rejected++;
+		}
+	}
+
+	file.close();
+
+	cout << "\n====================================\n";
+	cout << "   APPLICATION STATUS FOR CNIC\n";
+	cout << "   " << cnic << "\n";
+	cout << "====================================\n";
+	cout << "Submitted Applications: " << submitted << endl;
+	cout << "Approved Applications: " << approved << endl;
+	cout << "Rejected Applications: " << rejected << endl;
+	cout << "Total Applications: " << (submitted + approved + rejected) << endl;
+	cout << "====================================\n\n";
 }
 
-};
+void generateMonthlyPlan(const string& cnic, HomeLoan& homeLoan) {
+	ifstream file("applications.txt");
+	if (!file) {
+		cout << "No applications file found.\n";
+		return;
+	}
+
+	string line;
+	bool foundApproved = false;
+
+	while (getline(file, line)) {
+		stringstream ss(line);
+		string token;
+		int fieldCount = 0;
+		string fileCnic, status, appID;
+		int area = 0, homeSize = 0;
+
+		while (getline(ss, token, '#')) {
+			fieldCount++;
+			if (fieldCount == 1) appID = token;
+			if (fieldCount == 7) fileCnic = token;
+			if (fieldCount == 36) status = token;
+			if (fieldCount == 37) area = stoi(token);
+			if (fieldCount == 38) homeSize = stoi(token);
+		}
+
+		if (fileCnic == cnic && status == "approved") {
+			foundApproved = true;
+
+			int price = 0, downPayment = 0, installments = 0;
+			for (int i = 0; i < homeLoan.numberOfLines; i++) {
+				if (homeLoan.area[i] == area && homeLoan.size[i] == homeSize) {
+					price = homeLoan.price[i];
+					downPayment = homeLoan.downPayment[i];
+					installments = homeLoan.installments[i];
+					break;
+				}
+			}
+
+			if (price == 0) {
+				cout << "Error: Could not find matching home data.\n";
+				continue;
+			}
+
+			cout << "\n====================================\n";
+			cout << "   APPROVED APPLICATION FOUND\n";
+			cout << "====================================\n";
+			cout << "Application ID: " << appID << endl;
+			cout << "Area: " << area << endl;
+			cout << "Home Size: " << homeSize << " Marla" << endl;
+			cout << "Total Price: " << price << endl;
+			cout << "Down Payment: " << downPayment << endl;
+			cout << "Installment Period: " << installments << " months" << endl;
+			cout << "====================================\n\n";
+
+			string months[] = { "January", "February", "March", "April", "May", "June",
+							   "July", "August", "September", "October", "November", "December" };
+			int startMonth;
+			while (true) {
+				cout << "Enter starting month (1-12): ";
+				string input;
+				getline(cin, input);
+				if (all_of(input.begin(), input.end(), ::isdigit)) {
+					startMonth = stoi(input);
+					if (startMonth >= 1 && startMonth <= 12) break;
+				}
+				cout << "Invalid month! Please enter a number between 1 and 12.\n";
+			}
+
+			int monthlyInstallment = (price - downPayment) / installments;
+			int remainingAmount = price - downPayment;
+
+			cout << "\n====================================\n";
+			cout << "   MONTHLY PAYMENT PLAN\n";
+			cout << "====================================\n";
+			cout << "Monthly Installment: " << monthlyInstallment << endl;
+			cout << "====================================\n\n";
+
+			int currentMonth = startMonth - 1
+			for (int i = 1; i <= installments; i++) {
+				cout << "Month " << i << " (" << months[currentMonth] << "): " << monthlyInstallment << endl;
+				remainingAmount -= monthlyInstallment;
+				currentMonth = (currentMonth + 1) % 12;
+
+				if (i % 6 == 0 && i != installments) {
+					cout << "  --> Remaining Balance: " << remainingAmount << endl << endl;
+				}
+			}
+
+			cout << "\nFinal Balance: 0" << endl;
+			cout << "====================================\n\n";
+		}
+	}
+
+	file.close();
+
+	if (!foundApproved) {
+		cout << "\nNo approved applications found for CNIC: " << cnic << endl;
+	}
+}
 
 void startBot() {
 	Responder responderForUtterances;
@@ -1081,6 +1278,26 @@ void startBot() {
 			cout << "Exiting...\n";
 			break;
 		}
+
+		//// NEW: Check application status by CNIC
+		//if (input == "S" || input == "s") {
+		//	cin.ignore();
+		//	string cnic;
+		//	cout << "Enter CNIC (13 digits): ";
+		//	getline(cin, cnic);
+		//	checkApplicationsByCNIC(cnic);
+		//	continue;
+		//}
+
+		//// NEW: Generate monthly plan for approved applications
+		//if (input == "P" || input == "p") {
+		//	cin.ignore();
+		//	string cnic;
+		//	cout << "Enter CNIC (13 digits): ";
+		//	getline(cin, cnic);
+		//	generateMonthlyPlan(cnic, homeLoan);
+		//	continue;
+		//}
 
 		responderForUtterances.respondToUser(input);
 		cout << endl;
@@ -1135,6 +1352,67 @@ void startBot() {
 			}
 			else {
 				cout << "Invalid selection. Please choose 1 or 2.\n";
+			}
+		}
+
+		//Please Check (Application Form Keys too)
+		if (input == "A" || input == "a") {
+			cin.ignore();
+			LoanSeeker applicant;
+
+			cout << "\n=== LOAN APPLICATION FORM ===\n\n";
+
+			applicant.inputFullName();
+			applicant.inputFatherName();
+			applicant.inputPostalAddress();
+			applicant.inputContactNumber();
+			applicant.inputEmail();
+			applicant.inputCnic();
+			applicant.inputCnicExpiryDate();
+			applicant.inputEmploymentStatus();
+			applicant.inputMaritalStatus();
+			applicant.inputGender();
+			applicant.inputNumberOfDependents();
+			applicant.inputAnnualIncome();
+			applicant.inputAvgElectricityBill();
+			applicant.inputCurrentElectricityBill();
+
+			cout << "\n=== HOME SELECTION ===\n";
+			string areaInput;
+			while (true) {
+				cout << "Select Area (1-4): ";
+				getline(cin, areaInput);
+				if (areaInput.length() == 1 && areaInput[0] >= '1' && areaInput[0] <= '4') {
+					applicant.selectedArea = stoi(areaInput);
+					break;
+				}
+				cout << "Invalid area! Please enter 1, 2, 3, or 4.\n";
+			}
+
+			homeLoan.displayHomes(applicant.selectedArea);
+
+			while (true) {
+				cout << "Enter Home Size (in Marla): ";
+				string sizeInput;
+				getline(cin, sizeInput);
+				if (all_of(sizeInput.begin(), sizeInput.end(), ::isdigit)) {
+					applicant.selectedHomeSize = stoi(sizeInput);
+					break;
+				}
+				cout << "Invalid input! Please enter a numeric value.\n";
+			}
+
+			applicant.inputExistingLoanInfo();
+			applicant.inputRefereeDetails();
+			applicant.inputImagePaths();
+
+			applicant.displaySummary();
+
+			if (applicant.confirmSubmission()) {
+				applicant.saveToFile();
+			}
+			else {
+				cout << "\nApplication cancelled. Data not saved.\n";
 			}
 		}
 	}
