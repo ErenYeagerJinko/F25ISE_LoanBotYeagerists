@@ -4,7 +4,8 @@
 #include <string>
 #include <errno.h>
 #include <direct.h>
-
+#include <cctype>
+#include <algorithm>
 using namespace std;
 
 int numberOfLinesInFile(string fileName) {
@@ -1138,5 +1139,3 @@ void startBot() {
 		}
 	}
 }
-
-
