@@ -173,7 +173,7 @@ public:
 		}
 		return value;
 	}
-	void displayHomes(int areaNumber) {
+	int displayHomes(int areaNumber) {
 		int homesAvailable = 0;
 		for (int i = 0; i < numberOfLines; i++) {
 			if (area[i] == areaNumber) {
@@ -189,7 +189,7 @@ public:
 		if (homesAvailable == 0) {
 			cout << "No Homes Available in This Area\n\n";
 		}
-		return;
+		return homesAvailable;
 	}
 	void generateInstallmentPlan(int areaNumber) {
 		for (int i = 0; i < numberOfLines; i++) {
@@ -989,7 +989,7 @@ void inputImagePaths() {
     cout << "\nPlease provide the file names for the following documents:\n";
     cout << "(Images should be placed in the " << appFolder << " folder)\n\n";
 
-    cout << "Enter filename for CNIC Front (e.g., cnic_front.jpg): ";
+    cout << "Enter filename for CNIC Front (e.g. cnic_front.jpg): ";
     string filename;
     getline(cin, filename);
     images.cnicFrontPath = appFolder + "/" + filename;
@@ -998,11 +998,11 @@ void inputImagePaths() {
     getline(cin, filename);
     images.cnicBackPath = appFolder + "/" + filename;
 
-    cout << "Enter filename for Recent Electricity Bill (e.g., electricity_bill.jpg): ";
+    cout << "Enter filename for Recent Electricity Bill (e.g. electricity_bill.jpg): ";
     getline(cin, filename);
     images.electricityBillPath = appFolder + "/" + filename;
 
-    cout << "Enter filename for Salary Slip/Bank Statement (e.g., salary_slip.jpg): ";
+    cout << "Enter filename for Salary Slip/Bank Statement (e.g. salary_slip.jpg): ";
     getline(cin, filename);
     images.salarySlipPath = appFolder + "/" + filename;
 
@@ -1089,9 +1089,7 @@ void saveToFile() {
         << images.cnicBackPath << "#"
         << images.electricityBillPath << "#"
         << images.salarySlipPath << "#"
-		<< applicationStatus << "#"  
-		<< selectedArea << "#"     
-		<< selectedHomeSize << endl;
+		<< applicationStatus << "#"  << endl;
 
     file.close();
     cout << "\n====================================\n";
@@ -1121,10 +1119,10 @@ void checkApplicationsByCNIC(const string& cnic) {
 		while (getline(ss, token, '#')) {
 			fieldCount++;
 			if (fieldCount == 7) {
-				fileCnic = token;
+				fileCnic = token; 
 			}
 			if (fieldCount == 36) {
-				status = token;
+				status = token; 
 			}
 		}
 
@@ -1132,6 +1130,9 @@ void checkApplicationsByCNIC(const string& cnic) {
 			if (status == "submitted") submitted++;
 			else if (status == "approved") approved++;
 			else if (status == "rejected") rejected++;
+			else {
+				cout << "Unexpected status: " << status << endl;
+			}
 		}
 	}
 
@@ -1226,7 +1227,7 @@ void generateMonthlyPlan(const string& cnic, HomeLoan& homeLoan) {
 			cout << "Monthly Installment: " << monthlyInstallment << endl;
 			cout << "====================================\n\n";
 
-			int currentMonth = startMonth - 1
+			int currentMonth = startMonth - 1;
 			for (int i = 1; i <= installments; i++) {
 				cout << "Month " << i << " (" << months[currentMonth] << "): " << monthlyInstallment << endl;
 				remainingAmount -= monthlyInstallment;
@@ -1270,6 +1271,8 @@ void startBot() {
 	carLoan.initializeCarLoan();
 
 	while (true) {
+		bool showLoan = false;
+
 		cout << "You: ";
 		cin>>input;
 		cout << endl;
@@ -1278,26 +1281,6 @@ void startBot() {
 			cout << "Exiting...\n";
 			break;
 		}
-
-		//// NEW: Check application status by CNIC
-		//if (input == "S" || input == "s") {
-		//	cin.ignore();
-		//	string cnic;
-		//	cout << "Enter CNIC (13 digits): ";
-		//	getline(cin, cnic);
-		//	checkApplicationsByCNIC(cnic);
-		//	continue;
-		//}
-
-		//// NEW: Generate monthly plan for approved applications
-		//if (input == "P" || input == "p") {
-		//	cin.ignore();
-		//	string cnic;
-		//	cout << "Enter CNIC (13 digits): ";
-		//	getline(cin, cnic);
-		//	generateMonthlyPlan(cnic, homeLoan);
-		//	continue;
-		//}
 
 		responderForUtterances.respondToUser(input);
 		cout << endl;
@@ -1308,16 +1291,19 @@ void startBot() {
 				cin >> area;
 				cout << endl;
 				if (area[0] >= '1' && area[0] <= '4') {
-					homeLoan.displayHomes(stoi(area));
-					cout << "\nWould you like an installment plan? Y/n  ";
-					cin >> input;
-					cin.ignore();
-					if (input == "y" || input == "Y") {
-						homeLoan.generateInstallmentPlan(stoi(area));
+					int homes = homeLoan.displayHomes(stoi(area));
+					if (homes > 0) {
+						cout << "\nWould you like an installment plan? Y/n  ";
+						cin >> input;
+						cin.ignore();
+						if (input == "y" || input == "Y") {
+							homeLoan.generateInstallmentPlan(stoi(area));
+							showLoan = true;
+						}
 					}
 				}
 				else {
-					cout << "Invalid area selected. Please try again.\n";
+					cout << "Invalid area selected. Please try again.\n\n";
 				}
 			}
 		}
@@ -1329,12 +1315,10 @@ void startBot() {
 			cin.ignore();
 			if (input == "y" || input == "Y") {
 				scooterLoan.generateInstallmentPlan();
+				showLoan = true;
 			}
 		}
 		if (input == "C" || input == "c") {
-			cout << "Select car make:\n";
-			cout << "1. Make 1\n";
-			cout << "2. Make 2\n";
 			cout << "You: ";
 
 			string choice;
@@ -1348,71 +1332,66 @@ void startBot() {
 				cin >> input;
 				if (input == "y" || input == "Y") {
 					carLoan.generateInstallmentPlanForOption(opt);
+					showLoan = true;
 				}
 			}
 			else {
-				cout << "Invalid selection. Please choose 1 or 2.\n";
+				cout << "Invalid make selected. Please try again.\n\n";
 			}
 		}
 
-		//Please Check (Application Form Keys too)
-		if (input == "A" || input == "a") {
+		if (input == "B" || input == "b") {
+			string cnic;
 			cin.ignore();
-			LoanSeeker applicant;
-
-			cout << "\n=== LOAN APPLICATION FORM ===\n\n";
-
-			applicant.inputFullName();
-			applicant.inputFatherName();
-			applicant.inputPostalAddress();
-			applicant.inputContactNumber();
-			applicant.inputEmail();
-			applicant.inputCnic();
-			applicant.inputCnicExpiryDate();
-			applicant.inputEmploymentStatus();
-			applicant.inputMaritalStatus();
-			applicant.inputGender();
-			applicant.inputNumberOfDependents();
-			applicant.inputAnnualIncome();
-			applicant.inputAvgElectricityBill();
-			applicant.inputCurrentElectricityBill();
-
-			cout << "\n=== HOME SELECTION ===\n";
-			string areaInput;
-			while (true) {
-				cout << "Select Area (1-4): ";
-				getline(cin, areaInput);
-				if (areaInput.length() == 1 && areaInput[0] >= '1' && areaInput[0] <= '4') {
-					applicant.selectedArea = stoi(areaInput);
-					break;
-				}
-				cout << "Invalid area! Please enter 1, 2, 3, or 4.\n";
-			}
-
-			homeLoan.displayHomes(applicant.selectedArea);
-
-			while (true) {
-				cout << "Enter Home Size (in Marla): ";
-				string sizeInput;
-				getline(cin, sizeInput);
-				if (all_of(sizeInput.begin(), sizeInput.end(), ::isdigit)) {
-					applicant.selectedHomeSize = stoi(sizeInput);
-					break;
-				}
-				cout << "Invalid input! Please enter a numeric value.\n";
-			}
-
-			applicant.inputExistingLoanInfo();
-			applicant.inputRefereeDetails();
-			applicant.inputImagePaths();
-
-			applicant.displaySummary();
-
-			if (applicant.confirmSubmission()) {
-				applicant.saveToFile();
+			cout << "Enter CNIC (13 digits): ";
+			getline(cin, cnic);
+			if (all_of(cnic.begin(), cnic.end(), ::isdigit) && cnic.length() == 13) {
+				checkApplicationsByCNIC(cnic);
+				continue;
 			}
 			else {
-				cout << "\nApplication cancelled. Data not saved.\n";
+				cout << "Invalid CNIC. Please try again.\n\n";
+			}
+		}
+
+		if (showLoan) {
+			cout << "Would you like to apply for a loan? Y/n  ";
+			cin >> input;
+			if (input == "Y" || input == "y") {
+				cin.ignore();
+				LoanSeeker applicant;
+
+				cout << "\n=== LOAN APPLICATION FORM ===\n\n";
+
+				applicant.inputFullName();
+				applicant.inputFatherName();
+				applicant.inputPostalAddress();
+				applicant.inputContactNumber();
+				applicant.inputEmail();
+				applicant.inputCnic();
+				applicant.inputCnicExpiryDate();
+				applicant.inputEmploymentStatus();
+				applicant.inputMaritalStatus();
+				applicant.inputGender();
+				applicant.inputNumberOfDependents();
+				applicant.inputAnnualIncome();
+				applicant.inputAvgElectricityBill();
+				applicant.inputCurrentElectricityBill();
+				applicant.inputExistingLoanInfo();
+				applicant.inputRefereeDetails();
+				applicant.inputImagePaths();
+
+				applicant.displaySummary();
+
+				if (applicant.confirmSubmission()) {
+					applicant.saveToFile();
+				}
+				else {
+					cout << "\nApplication cancelled. Data not saved.\n";
+				}
+			}
+			else {
+				continue;
 			}
 		}
 	}
