@@ -502,6 +502,235 @@ public:
 	}
 };
 
+class LoanSeeker {
+private:
+    bool validateAlphabetString(const string& str) {
+        return all_of(str.begin(), str.end(), [](char c) { return isalpha(c) || isspace(c); });
+    }
+
+    bool validateNumeric(const string& str) {
+        return all_of(str.begin(), str.end(), ::isdigit);
+    }
+
+    bool validateEmail(const string& str) {
+        return str.find('@') != string::npos;
+    }
+
+    bool validateContactNumber(const string& str) {
+        return (str.size() == 11 && str[0] == '0') || (str.size() == 13 && str.substr(0, 3) == "+92");
+    }
+
+    bool validateCnic(const string& str) {
+        return str.size() == 13 && validateNumeric(str);
+    }
+
+    bool validateDate(const string& str) {
+        int day, month, year;
+        if (sscanf(str.c_str(), "%d %d %d", &day, &month, &year) == 3) {
+            if (month < 1 || month > 12) return false;
+            if (day < 1 || day > 31) return false;
+            if (month == 2) {
+                if (year % 4 == 0) {
+                    if (year % 100 == 0 && year % 400 != 0) return false;
+                    if (day > 29) return false;
+                } else {
+                    if (day > 28) return false;
+                }
+            }
+            if ((month == 4 || month == 6 || month == 9 || month == 11) && day > 30) return false;
+            return true;
+        }
+        return false;
+    }
+
+    bool validateEmploymentStatus(const string& str) {
+        return str == "self" || str == "salaried" || str == "retired" || str == "unemployed";
+    }
+
+    bool validateMaritalStatus(const string& str) {
+        return str == "widowed" || str == "single" || str == "married" || str == "divorced";
+    }
+
+    bool validateGender(const string& str) {
+        return str == "male" || str == "female" || str == "other";
+    }
+
+    void capitalizeWords(string& str) {
+        bool newWord = true;
+        for (char& c : str) {
+            if (newWord && isalpha(c)) {
+                c = toupper(c);
+                newWord = false;
+            } else if (isspace(c)) {
+                newWord = true;
+            } else {
+                c = tolower(c);
+            }
+        }
+    }
+
+public:
+    string fullName, fatherName, postalAddress, contactNumber, email, cnic, cnicExpiryDate;
+    string employmentStatus, maritalStatus, gender;
+    int numberOfDependents;
+    float annualIncome, avgElectricityBill, currentElectricityBill;
+
+    void inputFullName() {
+        while (true) {
+            cout << "Enter Full Name: ";
+            getline(cin, fullName);
+            if (validateAlphabetString(fullName)) {
+                capitalizeWords(fullName);
+                break;
+            } else {
+                cout << "Full Name should contain only alphabets and spaces!\n";
+            }
+        }
+    }
+
+    void inputFatherName() {
+        while (true) {
+            cout << "Enter Father's Name: ";
+            getline(cin, fatherName);
+            if (validateAlphabetString(fatherName)) {
+                capitalizeWords(fatherName);
+                break;
+            } else {
+                cout << "Father's Name should contain only alphabets and spaces!\n";
+            }
+        }
+    }
+
+    void inputPostalAddress() {
+        cout << "Enter Postal Address: ";
+        getline(cin, postalAddress);
+        capitalizeWords(postalAddress);
+    }
+
+    void inputContactNumber() {
+        while (true) {
+            cout << "Enter Contact Number (11 or 13 digits): ";
+            getline(cin, contactNumber);
+            if (validateContactNumber(contactNumber)) break;
+            cout << "Invalid Contact Number! Must be 11 digits starting with 0 or 13 digits starting with +92.\n";
+        }
+    }
+
+    void inputEmail() {
+        while (true) {
+            cout << "Enter Email Address: ";
+            getline(cin, email);
+            transform(email.begin(), email.end(), email.begin(), ::tolower);
+            if (validateEmail(email)) break;
+            cout << "Invalid Email Address! Must contain @ symbol.\n";
+        }
+    }
+
+    void inputCnic() {
+        while (true) {
+            cout << "Enter CNIC (13 digits, no dashes): ";
+            getline(cin, cnic);
+            if (validateCnic(cnic)) break;
+            cout << "Invalid CNIC! Must be exactly 13 digits.\n";
+        }
+    }
+
+    void inputCnicExpiryDate() {
+        while (true) {
+            cout << "Enter CNIC Expiry Date (dd mm yy): ";
+            getline(cin, cnicExpiryDate);
+            if (validateDate(cnicExpiryDate)) break;
+            cout << "Invalid date! Format must be dd mm yy with valid day/month values.\n";
+        }
+    }
+
+    void inputEmploymentStatus() {
+        while (true) {
+            cout << "Enter Employment Status (self, salaried, retired, unemployed): ";
+            getline(cin, employmentStatus);
+            transform(employmentStatus.begin(), employmentStatus.end(), employmentStatus.begin(), ::tolower);
+            if (validateEmploymentStatus(employmentStatus)) break;
+            cout << "Invalid Employment Status!\n";
+        }
+    }
+
+    void inputMaritalStatus() {
+        while (true) {
+            cout << "Enter Marital Status (widowed, single, married, divorced): ";
+            getline(cin, maritalStatus);
+            transform(maritalStatus.begin(), maritalStatus.end(), maritalStatus.begin(), ::tolower);
+            if (validateMaritalStatus(maritalStatus)) break;
+            cout << "Invalid Marital Status!\n";
+        }
+    }
+
+    void inputGender() {
+        while (true) {
+            cout << "Enter Gender (male, female, other): ";
+            getline(cin, gender);
+            transform(gender.begin(), gender.end(), gender.begin(), ::tolower);
+            if (validateGender(gender)) break;
+            cout << "Invalid Gender!\n";
+        }
+    }
+
+    void inputNumberOfDependents() {
+        string input;
+        while (true) {
+            cout << "Enter Number of Dependents: ";
+            getline(cin, input);
+            if (validateNumeric(input)) {
+                numberOfDependents = stoi(input);
+                break;
+            } else {
+                cout << "Invalid number! Must contain only digits.\n";
+            }
+        }
+    }
+
+    void inputAnnualIncome() {
+        while (true) {
+            cout << "Enter Annual Income (no commas): ";
+            string input;
+            getline(cin, input);
+            if (validateNumeric(input)) {
+                annualIncome = stof(input);
+                break;
+            } else {
+                cout << "Invalid input! Must contain only digits.\n";
+            }
+        }
+    }
+
+    void inputAvgElectricityBill() {
+        while (true) {
+            cout << "Enter Average Electricity Bill (no commas): ";
+            string input;
+            getline(cin, input);
+            if (validateNumeric(input)) {
+                avgElectricityBill = stof(input);
+                break;
+            } else {
+                cout << "Invalid input! Must contain only digits.\n";
+            }
+        }
+    }
+
+    void inputCurrentElectricityBill() {
+        while (true) {
+            cout << "Enter Current Electricity Bill (exact): ";
+            string input;
+            getline(cin, input);
+            if (validateNumeric(input)) {
+                currentElectricityBill = stof(input);
+                break;
+            } else {
+                cout << "Invalid input! Must contain only digits.\n";
+            }
+        }
+    }
+};
+
 void startBot() {
 	Responder responderForUtterances;
 	responderForUtterances.initializeResponder("Utterances.txt");
@@ -589,3 +818,4 @@ void startBot() {
 		}
 	}
 }
+
