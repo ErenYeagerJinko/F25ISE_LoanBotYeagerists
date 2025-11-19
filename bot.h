@@ -7,6 +7,8 @@
 #include <cctype>
 #include <algorithm>
 #include <sstream>
+#include <vector>
+#include <set>
 using namespace std;
 
 int numberOfLinesInFile(string fileName) {
@@ -599,30 +601,229 @@ private:
     }
 
 	bool validateYesNo(const string& str) {
-	    return str == "yes" || str == "y" || str == "no" || str == "n";
+		return str == "yes" || str == "y" || str == "no" || str == "n";
 	}
 
 	bool validateLoanStatus(const string& str) {
-	    return str == "active" || str == "inactive";
+		return str == "active" || str == "inactive";
 	}
 
 	bool validateLoanCategory(const string& str) {
-	    return str == "car" || str == "home" || str == "bike";
+		return str == "car" || str == "home" || str == "bike";
 	}
 
 	void toLowerCase(string& str) {
-	    transform(str.begin(), str.end(), str.begin(), ::tolower);
+		transform(str.begin(), str.end(), str.begin(), ::tolower);
 	}
 
 	bool createDirectory(const std::string& path) {
-	    int result = _mkdir(path.c_str());
-	    return result == 0 || errno == EEXIST;
+		int result = _mkdir(path.c_str());
+		return result == 0 || errno == EEXIST;
 	}
 
 	string generateApplicationID() {
-	    static int lastID = 1000;
-	    lastID++;
-	    return to_string(lastID);
+		static int lastID = 1000;
+		lastID++;
+		return to_string(lastID);
+	}
+
+	void selectHomeLoan() {
+		HomeLoan homeLoan;
+		homeLoan.initializeHomeLoan();
+
+		while (true) {
+			cout << "\nSelect area (1-4): ";
+			string areaInput;
+			getline(cin, areaInput);
+			if (validateArea(areaInput)) {
+				selectedArea = stoi(areaInput);
+				break;
+			}
+			cout << "Invalid area! Please enter a number between 1 and 4.\n";
+		}
+
+		cout << "\nAvailable homes in Area " << selectedArea << ":\n";
+		cout << "====================================\n";
+
+		int availableHomes = 0;
+		int* homeIndices = new int[homeLoan.numberOfLines];
+
+		for (int i = 0; i < homeLoan.numberOfLines; i++) {
+			if (homeLoan.area[i] == selectedArea) {
+				availableHomes++;
+				homeIndices[availableHomes - 1] = i;
+				cout << availableHomes << ". ";
+				cout << "Size: " << homeLoan.size[i] << " Marla | ";
+				cout << "Price: " << homeLoan.price[i] << " | ";
+				cout << "Down Payment: " << homeLoan.downPayment[i] << " | ";
+				cout << "Installments: " << homeLoan.installments[i] << " months\n";
+			}
+		}
+
+		if (availableHomes == 0) {
+			cout << "No homes available in this area!\n";
+			delete[] homeIndices;
+			return;
+		}
+
+		while (true) {
+			cout << "\nSelect a home (1-" << availableHomes << "): ";
+			string choiceInput;
+			getline(cin, choiceInput);
+			if (validateChoice(choiceInput, availableHomes)) {
+				int choice = stoi(choiceInput);
+				selectedHomeIndex = homeIndices[choice - 1];
+
+				selectedHomeDetails = "Area:" + to_string(selectedArea) +
+					",Size:" + to_string(homeLoan.size[selectedHomeIndex]) +
+					",Price:" + to_string(homeLoan.price[selectedHomeIndex]);
+
+				cout << "\nSelected: " << homeLoan.size[selectedHomeIndex]
+					<< " Marla home in Area " << selectedArea
+					<< " for " << homeLoan.price[selectedHomeIndex] << endl;
+				break;
+			}
+			cout << "Invalid selection! Please enter a number between 1 and " << availableHomes << ".\n";
+		}
+
+		delete[] homeIndices;
+	}
+
+	void selectCarLoan() {
+		CarLoan carLoan;
+		carLoan.initializeCarLoan();
+
+		while (true) {
+			cout << "\nSelect car make:\n";
+			cout << "1. Make 1\n";
+			cout << "2. Make 2\n";
+			cout << "Enter choice (1-2): ";
+			getline(cin, selectedMake);
+			if (validateMake(selectedMake)) break;
+			cout << "Invalid make! Please enter 1 or 2.\n";
+		}
+
+		string targetMake = (selectedMake == "1") ? "Make 1" : "Make 2";
+
+		cout << "\nAvailable " << targetMake << " cars:\n";
+		cout << "====================================\n";
+
+		int availableCars = 0;
+		int* carIndices = new int[carLoan.numberOfLines];
+
+		for (int i = 0; i < carLoan.numberOfLines; i++) {
+			if (carLoan.make[i] == targetMake) {
+				availableCars++;
+				carIndices[availableCars - 1] = i;
+				cout << availableCars << ". ";
+				cout << carLoan.make[i] << " " << carLoan.model[i] << " | ";
+				cout << "Engine: " << carLoan.engine[i] << "cc | ";
+				cout << "Year: " << carLoan.year[i] << " | ";
+				cout << "Price: " << carLoan.price[i] << " | ";
+				cout << "Installments: " << carLoan.installments[i] << " months\n";
+			}
+		}
+
+		if (availableCars == 0) {
+			cout << "No cars available for " << targetMake << "!\n";
+			delete[] carIndices;
+			return;
+		}
+
+		while (true) {
+			cout << "\nSelect a car (1-" << availableCars << "): ";
+			string choiceInput;
+			getline(cin, choiceInput);
+			if (validateChoice(choiceInput, availableCars)) {
+				int choice = stoi(choiceInput);
+				selectedCarIndex = carIndices[choice - 1];
+
+				selectedCarDetails = "Make:" + carLoan.make[selectedCarIndex] +
+					",Model:" + carLoan.model[selectedCarIndex] +
+					",Year:" + to_string(carLoan.year[selectedCarIndex]) +
+					",Price:" + to_string(carLoan.price[selectedCarIndex]);
+
+				cout << "\nSelected: " << carLoan.make[selectedCarIndex] << " "
+					<< carLoan.model[selectedCarIndex] << " ("
+					<< carLoan.year[selectedCarIndex] << ") for "
+					<< carLoan.price[selectedCarIndex] << endl;
+				break;
+			}
+			cout << "Invalid selection! Please enter a number between 1 and " << availableCars << ".\n";
+		}
+
+		delete[] carIndices;
+	}
+
+	void selectScooterLoan() {
+		ScooterLoan scooterLoan;
+		scooterLoan.initializeScooterLoan();
+
+		while (true) {
+			cout << "\nSelect scooter make:\n";
+			cout << "1. Make 1\n";
+			cout << "2. Make 2\n";
+			cout << "Enter choice (1-2): ";
+			getline(cin, selectedMake);
+			if (validateMake(selectedMake)) break;
+			cout << "Invalid make! Please enter 1 or 2.\n";
+		}
+
+		cout << "\nAvailable scooters:\n";
+		cout << "====================================\n";
+
+		int availableScooters = scooterLoan.numberOfLines;
+		if (availableScooters == 0) {
+			cout << "No scooters available!\n";
+			return;
+		}
+
+		for (int i = 0; i < availableScooters; i++) {
+			cout << (i + 1) << ". ";
+			cout << scooterLoan.make[i] << " " << scooterLoan.model[i] << " | ";
+			cout << "Range: " << scooterLoan.distancePerCharge[i] << "km | ";
+			cout << "Speed: " << scooterLoan.maxSpeed[i] << "km/h | ";
+			cout << "Price: " << scooterLoan.price[i] << " | ";
+			cout << "Installments: " << scooterLoan.installments[i] << " months\n";
+		}
+
+		while (true) {
+			cout << "\nSelect a scooter (1-" << availableScooters << "): ";
+			string choiceInput;
+			getline(cin, choiceInput);
+			if (validateChoice(choiceInput, availableScooters)) {
+				int choice = stoi(choiceInput);
+				selectedScooterIndex = choice - 1;
+
+				selectedScooterDetails = "Make:" + scooterLoan.make[selectedScooterIndex] +
+					",Model:" + scooterLoan.model[selectedScooterIndex] +
+					",Price:" + to_string(scooterLoan.price[selectedScooterIndex]);
+
+				cout << "\nSelected: " << scooterLoan.make[selectedScooterIndex] << " "
+					<< scooterLoan.model[selectedScooterIndex] << " for "
+					<< scooterLoan.price[selectedScooterIndex] << endl;
+				break;
+			}
+			cout << "Invalid selection! Please enter a number between 1 and " << availableScooters << ".\n";
+		}
+	}
+
+	bool validateLoanType(const string& str) {
+		return str == "home" || str == "car" || str == "scooter";
+	}
+
+	bool validateArea(const string& str) {
+		return str == "1" || str == "2" || str == "3" || str == "4";
+	}
+
+	bool validateMake(const string& str) {
+		return str == "1" || str == "2";
+	}
+
+	bool validateChoice(const string& str, int maxChoice) {
+		if (!all_of(str.begin(), str.end(), ::isdigit)) return false;
+		int choice = stoi(str);
+		return choice >= 1 && choice <= maxChoice;
 	}
 
 public:
@@ -638,8 +839,15 @@ public:
 	string applicationID;
 	string applicationStatus; 
 	int selectedArea;      
-	int selectedHomeSize;
 
+	string loanType;
+	string selectedMake;      
+	int selectedHomeIndex;    
+	int selectedCarIndex;     
+	int selectedScooterIndex; 
+	string selectedHomeDetails; 
+	string selectedCarDetails;  
+	string selectedScooterDetails; 
 
 LoanSeeker() {
     hasExistingLoan = false;
@@ -650,7 +858,15 @@ LoanSeeker() {
     numberOfDependents = 0;
 	applicationStatus = "submitted";
 	selectedArea = 0;
-	selectedHomeSize = 0;
+	loanType = "";
+	selectedMake = "";
+	selectedArea = 0;
+	selectedHomeIndex = -1;
+	selectedCarIndex = -1;
+	selectedScooterIndex = -1;
+	selectedHomeDetails = "";
+	selectedCarDetails = "";
+	selectedScooterDetails = "";
 }
 
     void inputFullName() {
@@ -809,204 +1025,226 @@ LoanSeeker() {
     }
 
 	void inputExistingLoanInfo() {
-	    cout << "\n=== EXISTING LOAN INFORMATION ===\n";
-	    string response;
-	
-	    while (true) {
-	        cout << "Do you have any existing loans? (yes/no): ";
-	        getline(cin, response);
-	        toLowerCase(response);
-	        if (validateYesNo(response)) break;
-	        cout << "Invalid input! Please enter 'yes' or 'no'.\n";
-	    }
-	
-	    if (response == "yes" || response == "y") {
-	        hasExistingLoan = true;
-	
-	        while (true) {
-	            cout << "Is the loan period Active or Inactive? (active/inactive): ";
-	            getline(cin, existingLoan.loanPeriodStatus);
-	            toLowerCase(existingLoan.loanPeriodStatus);
-	            if (validateLoanStatus(existingLoan.loanPeriodStatus)) {
-	                capitalizeWords(existingLoan.loanPeriodStatus);
-	                break;
-	            }
-	            cout << "Invalid input! Please enter 'active' or 'inactive'.\n";
-	        }
-	
-	        while (true) {
-	            cout << "Enter Total Loan Amount (no commas): ";
-	            getline(cin, existingLoan.totalLoanAmount);
-	            if (validateNumeric(existingLoan.totalLoanAmount)) break;
-	            cout << "Invalid input! Must contain only digits.\n";
-	        }
-	
-	        while (true) {
-	            cout << "Enter Amount Returned (no commas): ";
-	            getline(cin, existingLoan.amountReturned);
-	            if (validateNumeric(existingLoan.amountReturned)) break;
-	            cout << "Invalid input! Must contain only digits.\n";
-	        }
-	
-	        while (true) {
-	            cout << "Enter Loan Amount Still Due (no commas): ";
-	            getline(cin, existingLoan.loanAmountDue);
-	            if (validateNumeric(existingLoan.loanAmountDue)) break;
-	            cout << "Invalid input! Must contain only digits.\n";
-	        }
-	
-	        while (true) {
-	            cout << "Enter Bank Name: ";
-	            getline(cin, existingLoan.bankName);
-	            if (validateAlphabetString(existingLoan.bankName)) {
-	                capitalizeWords(existingLoan.bankName);
-	                break;
-	            }
-	            cout << "Bank Name should contain only alphabets and spaces!\n";
-	        }
-	
-	        while (true) {
-	            cout << "Enter Loan Category (car/home/bike): ";
-	            getline(cin, existingLoan.loanCategory);
-	            toLowerCase(existingLoan.loanCategory);
-	            if (validateLoanCategory(existingLoan.loanCategory)) {
-	                capitalizeWords(existingLoan.loanCategory);
-	                break;
-	            }
-	            cout << "Invalid input! Please enter 'car', 'home', or 'bike'.\n";
-	        }
-	    }
-	    else {
-	        hasExistingLoan = false;
-	        existingLoan.loanPeriodStatus = "N/A";
-	        existingLoan.totalLoanAmount = "0";
-	        existingLoan.amountReturned = "0";
-	        existingLoan.loanAmountDue = "0";
-	        existingLoan.bankName = "N/A";
-	        existingLoan.loanCategory = "N/A";
-	    }
+		cout << "\n=== EXISTING LOAN INFORMATION ===\n";
+		string response;
+
+		while (true) {
+			cout << "Do you have any existing loans? (yes/no): ";
+			getline(cin, response);
+			toLowerCase(response);
+			if (validateYesNo(response)) break;
+			cout << "Invalid input! Please enter 'yes' or 'no'.\n";
+		}
+
+		if (response == "yes" || response == "y") {
+			hasExistingLoan = true;
+
+			while (true) {
+				cout << "Is the loan period Active or Inactive? (active/inactive): ";
+				getline(cin, existingLoan.loanPeriodStatus);
+				toLowerCase(existingLoan.loanPeriodStatus);
+				if (validateLoanStatus(existingLoan.loanPeriodStatus)) {
+					capitalizeWords(existingLoan.loanPeriodStatus);
+					break;
+				}
+				cout << "Invalid input! Please enter 'active' or 'inactive'.\n";
+			}
+
+			while (true) {
+				cout << "Enter Total Loan Amount (no commas): ";
+				getline(cin, existingLoan.totalLoanAmount);
+				if (validateNumeric(existingLoan.totalLoanAmount)) break;
+				cout << "Invalid input! Must contain only digits.\n";
+			}
+
+			while (true) {
+				cout << "Enter Amount Returned (no commas): ";
+				getline(cin, existingLoan.amountReturned);
+				if (validateNumeric(existingLoan.amountReturned)) break;
+				cout << "Invalid input! Must contain only digits.\n";
+			}
+
+			while (true) {
+				cout << "Enter Loan Amount Still Due (no commas): ";
+				getline(cin, existingLoan.loanAmountDue);
+				if (validateNumeric(existingLoan.loanAmountDue)) break;
+				cout << "Invalid input! Must contain only digits.\n";
+			}
+
+			while (true) {
+				cout << "Enter Bank Name: ";
+				getline(cin, existingLoan.bankName);
+				if (validateAlphabetString(existingLoan.bankName)) {
+					capitalizeWords(existingLoan.bankName);
+					break;
+				}
+				cout << "Bank Name should contain only alphabets and spaces!\n";
+			}
+
+			while (true) {
+				cout << "Enter Loan Category (car/home/bike): ";
+				getline(cin, existingLoan.loanCategory);
+				toLowerCase(existingLoan.loanCategory);
+				if (validateLoanCategory(existingLoan.loanCategory)) {
+					capitalizeWords(existingLoan.loanCategory);
+					break;
+				}
+				cout << "Invalid input! Please enter 'car', 'home', or 'bike'.\n";
+			}
+		}
+		else {
+			hasExistingLoan = false;
+			existingLoan.loanPeriodStatus = "N/A";
+			existingLoan.totalLoanAmount = "0";
+			existingLoan.amountReturned = "0";
+			existingLoan.loanAmountDue = "0";
+			existingLoan.bankName = "N/A";
+			existingLoan.loanCategory = "N/A";
+		}
 	}
 
 	void inputRefereeDetails() {
-	    cout << "\n=== REFEREE DETAILS ===\n";
-	
-	    cout << "\n--- Referee 1 Information ---\n";
-	
-	    while (true) {
-	        cout << "Enter Name of Referee 1: ";
-	        getline(cin, referee1.name);
-	        if (validateAlphabetString(referee1.name)) {
-	            capitalizeWords(referee1.name);
-	            break;
-	        }
-	        cout << "Name should contain only alphabets and spaces!\n";
-	    }
-	
-	    while (true) {
-	        cout << "Enter CNIC of Referee 1 (13 digits, no dashes): ";
-	        getline(cin, referee1.cnic);
-	        if (validateCnic(referee1.cnic)) break;
-	        cout << "Invalid CNIC! Must be exactly 13 digits.\n";
-	    }
-	
-	    while (true) {
-	        cout << "Enter CNIC Issue Date of Referee 1 (DD-MM-YYYY): ";
-	        getline(cin, referee1.cnicIssueDate);
-	        if (validateDate(referee1.cnicIssueDate)) break;
-	        cout << "Invalid date! Format must be DD-MM-YYYY with valid day/month/year values.\n";
-	    }
-	
-	    while (true) {
-	        cout << "Enter Phone Number of Referee 1 (11 or 13 digits): ";
-	        getline(cin, referee1.phoneNumber);
-	        if (validateContactNumber(referee1.phoneNumber)) break;
-	        cout << "Invalid Phone Number! Must be 11 digits starting with 0 or 13 digits starting with +92.\n";
-	    }
-	
-	    while (true) {
-	        cout << "Enter Email Address of Referee 1: ";
-	        getline(cin, referee1.emailAddress);
-	        toLowerCase(referee1.emailAddress);
-	        if (validateEmail(referee1.emailAddress)) break;
-	        cout << "Invalid Email Address! Must contain @ symbol.\n";
-	    }
-	
-	    cout << "\n--- Referee 2 Information ---\n";
-	
-	    while (true) {
-	        cout << "Enter Name of Referee 2: ";
-	        getline(cin, referee2.name);
-	        if (validateAlphabetString(referee2.name)) {
-	            capitalizeWords(referee2.name);
-	            break;
-	        }
-	        cout << "Name should contain only alphabets and spaces!\n";
-	    }
-	
-	    while (true) {
-	        cout << "Enter CNIC of Referee 2 (13 digits, no dashes): ";
-	        getline(cin, referee2.cnic);
-	        if (validateCnic(referee2.cnic)) break;
-	        cout << "Invalid CNIC! Must be exactly 13 digits.\n";
-	    }
-	
-	    while (true) {
-	        cout << "Enter CNIC Issue Date of Referee 2 (DD-MM-YYYY): ";
-	        getline(cin, referee2.cnicIssueDate);
-	        if (validateDate(referee2.cnicIssueDate)) break;
-	        cout << "Invalid date! Format must be DD-MM-YYYY with valid day/month/year values.\n";
-	    }
-	
-	    while (true) {
-	        cout << "Enter Phone Number of Referee 2 (11 or 13 digits): ";
-	        getline(cin, referee2.phoneNumber);
-	        if (validateContactNumber(referee2.phoneNumber)) break;
-	        cout << "Invalid Phone Number! Must be 11 digits starting with 0 or 13 digits starting with +92.\n";
-	    }
-	
-	    while (true) {
-	        cout << "Enter Email Address of Referee 2: ";
-	        getline(cin, referee2.emailAddress);
-	        toLowerCase(referee2.emailAddress);
-	        if (validateEmail(referee2.emailAddress)) break;
-	        cout << "Invalid Email Address! Must contain @ symbol.\n";
-	    }
+		cout << "\n=== REFEREE DETAILS ===\n";
+
+		cout << "\n--- Referee 1 Information ---\n";
+
+		while (true) {
+			cout << "Enter Name of Referee 1: ";
+			getline(cin, referee1.name);
+			if (validateAlphabetString(referee1.name)) {
+				capitalizeWords(referee1.name);
+				break;
+			}
+			cout << "Name should contain only alphabets and spaces!\n";
+		}
+
+		while (true) {
+			cout << "Enter CNIC of Referee 1 (13 digits, no dashes): ";
+			getline(cin, referee1.cnic);
+			if (validateCnic(referee1.cnic)) break;
+			cout << "Invalid CNIC! Must be exactly 13 digits.\n";
+		}
+
+		while (true) {
+			cout << "Enter CNIC Issue Date of Referee 1 (DD-MM-YYYY): ";
+			getline(cin, referee1.cnicIssueDate);
+			if (validateDate(referee1.cnicIssueDate)) break;
+			cout << "Invalid date! Format must be DD-MM-YYYY with valid day/month/year values.\n";
+		}
+
+		while (true) {
+			cout << "Enter Phone Number of Referee 1 (11 or 13 digits): ";
+			getline(cin, referee1.phoneNumber);
+			if (validateContactNumber(referee1.phoneNumber)) break;
+			cout << "Invalid Phone Number! Must be 11 digits starting with 0 or 13 digits starting with +92.\n";
+		}
+
+		while (true) {
+			cout << "Enter Email Address of Referee 1: ";
+			getline(cin, referee1.emailAddress);
+			toLowerCase(referee1.emailAddress);
+			if (validateEmail(referee1.emailAddress)) break;
+			cout << "Invalid Email Address! Must contain @ symbol.\n";
+		}
+
+		cout << "\n--- Referee 2 Information ---\n";
+
+		while (true) {
+			cout << "Enter Name of Referee 2: ";
+			getline(cin, referee2.name);
+			if (validateAlphabetString(referee2.name)) {
+				capitalizeWords(referee2.name);
+				break;
+			}
+			cout << "Name should contain only alphabets and spaces!\n";
+		}
+
+		while (true) {
+			cout << "Enter CNIC of Referee 2 (13 digits, no dashes): ";
+			getline(cin, referee2.cnic);
+			if (validateCnic(referee2.cnic)) break;
+			cout << "Invalid CNIC! Must be exactly 13 digits.\n";
+		}
+
+		while (true) {
+			cout << "Enter CNIC Issue Date of Referee 2 (DD-MM-YYYY): ";
+			getline(cin, referee2.cnicIssueDate);
+			if (validateDate(referee2.cnicIssueDate)) break;
+			cout << "Invalid date! Format must be DD-MM-YYYY with valid day/month/year values.\n";
+		}
+
+		while (true) {
+			cout << "Enter Phone Number of Referee 2 (11 or 13 digits): ";
+			getline(cin, referee2.phoneNumber);
+			if (validateContactNumber(referee2.phoneNumber)) break;
+			cout << "Invalid Phone Number! Must be 11 digits starting with 0 or 13 digits starting with +92.\n";
+		}
+
+		while (true) {
+			cout << "Enter Email Address of Referee 2: ";
+			getline(cin, referee2.emailAddress);
+			toLowerCase(referee2.emailAddress);
+			if (validateEmail(referee2.emailAddress)) break;
+			cout << "Invalid Email Address! Must contain @ symbol.\n";
+		}
 	}
 
 	void inputImagePaths() {
-	    cout << "\n=== DOCUMENT IMAGES ===\n";
-	
-	    applicationID = generateApplicationID();
-	
-	    string dataFolder = "./data";
-	    string appFolder = dataFolder + "/" + applicationID;
-	
-	    createDirectory(dataFolder);
-	    createDirectory(appFolder);
-	
-	    cout << "Your Application ID is: " << applicationID << endl;
-	    cout << "All images will be saved in folder: " << appFolder << endl;
-	    cout << "\nPlease provide the file names for the following documents:\n";
-	    cout << "(Images should be placed in the " << appFolder << " folder)\n\n";
-	
-	    cout << "Enter filename for CNIC Front (e.g. cnic_front.jpg): ";
-	    string filename;
-	    getline(cin, filename);
-	    images.cnicFrontPath = appFolder + "/" + filename;
-	
-	    cout << "Enter filename for CNIC Back (e.g., cnic_back.jpg): ";
-	    getline(cin, filename);
-	    images.cnicBackPath = appFolder + "/" + filename;
-	
-	    cout << "Enter filename for Recent Electricity Bill (e.g. electricity_bill.jpg): ";
-	    getline(cin, filename);
-	    images.electricityBillPath = appFolder + "/" + filename;
-	
-	    cout << "Enter filename for Salary Slip/Bank Statement (e.g. salary_slip.jpg): ";
-	    getline(cin, filename);
-	    images.salarySlipPath = appFolder + "/" + filename;
-	
-	    cout << "\nImage paths recorded successfully!\n";
+		cout << "\n=== DOCUMENT IMAGES ===\n";
+
+		applicationID = generateApplicationID();
+
+		string dataFolder = "./data";
+		string appFolder = dataFolder + "/" + applicationID;
+
+		createDirectory(dataFolder);
+		createDirectory(appFolder);
+
+		cout << "Your Application ID is: " << applicationID << endl;
+		cout << "All images will be saved in folder: " << appFolder << endl;
+		cout << "\nPlease provide the file names for the following documents:\n";
+		cout << "(Images should be placed in the " << appFolder << " folder)\n\n";
+
+		cout << "Enter filename for CNIC Front (e.g. cnic_front.jpg): ";
+		string filename;
+		getline(cin, filename);
+		images.cnicFrontPath = appFolder + "/" + filename;
+
+		cout << "Enter filename for CNIC Back (e.g. cnic_back.jpg): ";
+		getline(cin, filename);
+		images.cnicBackPath = appFolder + "/" + filename;
+
+		cout << "Enter filename for Recent Electricity Bill (e.g. electricity_bill.jpg): ";
+		getline(cin, filename);
+		images.electricityBillPath = appFolder + "/" + filename;
+
+		cout << "Enter filename for Salary Slip/Bank Statement (e.g. salary_slip.jpg): ";
+		getline(cin, filename);
+		images.salarySlipPath = appFolder + "/" + filename;
+
+		cout << "\nImage paths recorded successfully!\n";
+	}
+
+	void inputLoanTypeAndSelection() {
+		cout << "\n=== LOAN TYPE SELECTION ===\n";
+
+		while (true) {
+			cout << "Select loan type (home/car/scooter): ";
+			getline(cin, loanType);
+			transform(loanType.begin(), loanType.end(), loanType.begin(), ::tolower);
+			if (validateLoanType(loanType)) break;
+			cout << "Invalid loan type! Please enter 'home', 'car', or 'scooter'.\n";
+		}
+
+		if (loanType == "home") {
+			selectHomeLoan();
+		}
+		else if (loanType == "car") {
+			selectCarLoan();
+		}
+		else if (loanType == "scooter") {
+			selectScooterLoan();
+		}
 	}
 
 	void displaySummary() {
@@ -1021,16 +1259,66 @@ LoanSeeker() {
 		cout << "Email: " << email << endl;
 		cout << "Employment: " << employmentStatus << endl;
 		cout << "Annual Income: " << annualIncome << endl;
-		cout << "Selected Area: " << selectedArea << endl;
-		cout << "Selected Home Size: " << selectedHomeSize << " Marla" << endl;
-		cout << "\nExisting Loan: " << (hasExistingLoan ? "Yes" : "No") << endl;
+
+		cout << "\n--- LOAN INFORMATION ---\n";
+		cout << "Loan Type: " << (loanType.empty() ? "Not Selected" : loanType) << endl;
+
+		if (loanType == "home") {
+			cout << "Selected Area: " << selectedArea << endl;
+			if (!selectedHomeDetails.empty()) {
+				cout << "Home Details: " << selectedHomeDetails << endl;
+			}
+			else {
+				cout << "Home Details: Not specified\n";
+			}
+		}
+		else if (loanType == "car") {
+			if (!selectedCarDetails.empty()) {
+				cout << "Car Details: " << selectedCarDetails << endl;
+			}
+			else {
+				cout << "Car Details: Not specified\n";
+			}
+			if (!selectedMake.empty()) {
+				cout << "Selected Make: " << (selectedMake == "1" ? "Make 1" : "Make 2") << endl;
+			}
+		}
+		else if (loanType == "scooter") {
+			if (!selectedScooterDetails.empty()) {
+				cout << "Scooter Details: " << selectedScooterDetails << endl;
+			}
+			else {
+				cout << "Scooter Details: Not specified\n";
+			}
+			if (!selectedMake.empty()) {
+				cout << "Selected Make: " << (selectedMake == "1" ? "Make 1" : "Make 2") << endl;
+			}
+		}
+		else {
+			cout << "No loan type selected\n";
+		}
+
+		cout << "\n--- EXISTING LOAN INFORMATION ---\n";
+		cout << "Existing Loan: " << (hasExistingLoan ? "Yes" : "No") << endl;
 		if (hasExistingLoan) {
 			cout << "  Bank: " << existingLoan.bankName << endl;
 			cout << "  Category: " << existingLoan.loanCategory << endl;
 			cout << "  Status: " << existingLoan.loanPeriodStatus << endl;
+			cout << "  Total Amount: " << existingLoan.totalLoanAmount << endl;
+			cout << "  Amount Returned: " << existingLoan.amountReturned << endl;
+			cout << "  Amount Due: " << existingLoan.loanAmountDue << endl;
 		}
-		cout << "\nReferee 1: " << referee1.name << " (" << referee1.cnic << ")" << endl;
+
+		cout << "\n--- REFEREE INFORMATION ---\n";
+		cout << "Referee 1: " << referee1.name << " (" << referee1.cnic << ")" << endl;
 		cout << "Referee 2: " << referee2.name << " (" << referee2.cnic << ")" << endl;
+
+		cout << "\n--- DOCUMENT INFORMATION ---\n";
+		cout << "CNIC Front: " << images.cnicFrontPath << endl;
+		cout << "CNIC Back: " << images.cnicBackPath << endl;
+		cout << "Electricity Bill: " << images.electricityBillPath << endl;
+		cout << "Salary Slip: " << images.salarySlipPath << endl;
+
 		cout << "\n====================================\n";
 	}
 
@@ -1048,56 +1336,64 @@ LoanSeeker() {
 	}
 
 	void saveToFile() {
-	    ofstream file("applications.txt", ios::app);
-	    if (!file) {
-	        cout << "Error! Could not open applications.txt for writing!\n";
-	        return;
-	    }
-	
-	    file << applicationID << "#"
-			<< fullName << "#"
-	        << fatherName << "#"
-	        << postalAddress << "#"
-	        << contactNumber << "#"
-	        << email << "#"
-	        << cnic << "#"
-	        << cnicExpiryDate << "#"
-	        << employmentStatus << "#"
-	        << maritalStatus << "#"
-	        << gender << "#"
-	        << numberOfDependents << "#"
-	        << annualIncome << "#"
-	        << avgElectricityBill << "#"
-	        << currentElectricityBill << "#"
-	        << existingLoan.loanPeriodStatus << "#"
-	        << existingLoan.totalLoanAmount << "#"
-	        << existingLoan.amountReturned << "#"
-	        << existingLoan.loanAmountDue << "#"
-	        << existingLoan.bankName << "#"
-	        << existingLoan.loanCategory << "#"
-	        << referee1.name << "#"
-	        << referee1.cnic << "#"
-	        << referee1.cnicIssueDate << "#"
-	        << referee1.phoneNumber << "#"
-	        << referee1.emailAddress << "#"
-	        << referee2.name << "#"
-	        << referee2.cnic << "#"
-	        << referee2.cnicIssueDate << "#"
-	        << referee2.phoneNumber << "#"
-	        << referee2.emailAddress << "#"
-	        << images.cnicFrontPath << "#"
-	        << images.cnicBackPath << "#"
-	        << images.electricityBillPath << "#"
-	        << images.salarySlipPath << "#"
-			<< applicationStatus << "#"  << endl;
-	
-	    file.close();
-	    cout << "\n====================================\n";
-	    cout << "Application submitted successfully!\n";
-	    cout << "Application ID: " << applicationID << endl;
-		cout << "Status: " << applicationStatus << endl;
-	    cout << "====================================\n";
+		ofstream file("applications.txt", ios::app);
+		if (!file) {
+			cout << "Error! Could not open applications.txt for writing!\n";
+			return;
 		}
+
+		file << applicationID << "#"
+			<< fullName << "#"
+			<< fatherName << "#"
+			<< postalAddress << "#"
+			<< contactNumber << "#"
+			<< email << "#"
+			<< cnic << "#"
+			<< cnicExpiryDate << "#"
+			<< employmentStatus << "#"
+			<< maritalStatus << "#"
+			<< gender << "#"
+			<< numberOfDependents << "#"
+			<< annualIncome << "#"
+			<< avgElectricityBill << "#"
+			<< currentElectricityBill << "#"
+			<< existingLoan.loanPeriodStatus << "#"
+			<< existingLoan.totalLoanAmount << "#"
+			<< existingLoan.amountReturned << "#"
+			<< existingLoan.loanAmountDue << "#"
+			<< existingLoan.bankName << "#"
+			<< existingLoan.loanCategory << "#"
+			<< referee1.name << "#"
+			<< referee1.cnic << "#"
+			<< referee1.cnicIssueDate << "#"
+			<< referee1.phoneNumber << "#"
+			<< referee1.emailAddress << "#"
+			<< referee2.name << "#"
+			<< referee2.cnic << "#"
+			<< referee2.cnicIssueDate << "#"
+			<< referee2.phoneNumber << "#"
+			<< referee2.emailAddress << "#"
+			<< images.cnicFrontPath << "#"
+			<< images.cnicBackPath << "#"
+			<< images.electricityBillPath << "#"
+			<< images.salarySlipPath << "#"
+			<< applicationStatus << "#" << loanType << "#"
+			<< selectedMake << "#"
+			<< selectedArea << "#"
+			<< selectedHomeIndex << "#"
+			<< selectedCarIndex << "#"
+			<< selectedScooterIndex << "#"
+			<< selectedHomeDetails << "#"
+			<< selectedCarDetails << "#"
+			<< selectedScooterDetails << "#" << endl;
+
+		file.close();
+		cout << "\n====================================\n";
+		cout << "Application submitted successfully!\n";
+		cout << "Application ID: " << applicationID << endl;
+		cout << "Status: " << applicationStatus << endl;
+		cout << "====================================\n";
+	}
 };
 
 void checkApplicationsByCNIC(const string& cnic) {
@@ -1109,47 +1405,116 @@ void checkApplicationsByCNIC(const string& cnic) {
 
 	int submitted = 0, approved = 0, rejected = 0;
 	string line;
+	vector<string> approvedAppIDs;
 
 	while (getline(file, line)) {
 		stringstream ss(line);
 		string token;
 		int fieldCount = 0;
-		string fileCnic, status;
+		string fileCnic, status, appID, loanType;
 
 		while (getline(ss, token, '#')) {
 			fieldCount++;
-			if (fieldCount == 7) {
-				fileCnic = token; 
-			}
-			if (fieldCount == 36) {
-				status = token; 
-			}
+			if (fieldCount == 1) appID = token;
+			if (fieldCount == 7) fileCnic = token;
+			if (fieldCount == 36) status = token;
+			if (fieldCount == 37) loanType = token;
 		}
 
 		if (fileCnic == cnic) {
 			if (status == "submitted") submitted++;
-			else if (status == "approved") approved++;
+			else if (status == "approved") {
+				approved++;
+				approvedAppIDs.push_back(appID);
+			}
 			else if (status == "rejected") rejected++;
 			else {
 				cout << "Unexpected status: " << status << endl;
 			}
 		}
 	}
-
 	file.close();
 
-	cout << "\n====================================\n";
-	cout << "   APPLICATION STATUS FOR CNIC\n";
-	cout << "   " << cnic << "\n";
-	cout << "====================================\n";
+	cout << "\n=============================================\n";
+	cout << "   APPLICATION STATUS FOR CNIC " << cnic << "\n";
+	cout << "=============================================\n";
 	cout << "Submitted Applications: " << submitted << endl;
 	cout << "Approved Applications: " << approved << endl;
 	cout << "Rejected Applications: " << rejected << endl;
 	cout << "Total Applications: " << (submitted + approved + rejected) << endl;
+
+	if (approved > 0) {
+		cout << "\n--- APPROVED APPLICATION DETAILS ---\n";
+
+		ifstream approvedFile("approved.txt");
+		if (approvedFile) {
+			bool foundPaymentPlans = false;
+
+			while (getline(approvedFile, line)) {
+				stringstream ss(line);
+				string token;
+				int fieldCount = 0;
+				string approvedAppID, approvedCNIC, loanType, description;
+				int price, downPayment, installments, monthlyInstallment, totalAmount, startMonth;
+				string paymentStatus;
+				int remainingAmount, paidAmount;
+
+				while (getline(ss, token, '#')) {
+					fieldCount++;
+					switch (fieldCount) {
+					case 1: approvedAppID = token; break;
+					case 2: approvedCNIC = token; break;
+					case 3: loanType = token; break;
+					case 4: description = token; break;
+					case 5: price = stoi(token); break;
+					case 6: downPayment = stoi(token); break;
+					case 7: installments = stoi(token); break;
+					case 8: monthlyInstallment = stoi(token); break;
+					case 9: totalAmount = stoi(token); break;
+					case 10: startMonth = stoi(token); break;
+					case 11: paymentStatus = token; break;
+					case 12: remainingAmount = stoi(token); break;
+					case 13: paidAmount = stoi(token); break;
+					}
+				}
+
+				if (approvedCNIC == cnic) {
+					foundPaymentPlans = true;
+					cout << "\nApplication ID: " << approvedAppID << endl;
+					cout << "Loan Type: " << loanType << endl;
+					cout << "Description: " << description << endl;
+					cout << "Total Price: " << price << endl;
+					cout << "Down Payment: " << downPayment << endl;
+					cout << "Monthly Installment: " << monthlyInstallment << endl;
+					cout << "Total Loan Amount: " << totalAmount << endl;
+					cout << "Installment Period: " << installments << " months" << endl;
+					cout << "Starting Month: " << startMonth << endl;
+					cout << "Payment Status: " << paymentStatus << endl;
+					cout << "Amount Paid: " << paidAmount << endl;
+					cout << "Remaining Amount: " << remainingAmount << endl;
+
+					double progress = (totalAmount > 0) ? ((double)paidAmount / totalAmount) * 100 : 0;
+					cout << "Payment Progress: " << progress << "%" << endl;
+					cout << "------------------------" << endl;
+				}
+			}
+			approvedFile.close();
+
+			if (!foundPaymentPlans) {
+				cout << "No payment plans generated for approved applications.\n";
+				cout << "Use 'M' option to generate monthly payment plans.\n";
+			}
+		}
+		else {
+			cout << "No payment plans found for approved applications.\n";
+			cout << "Use 'M' option to generate monthly payment plans.\n";
+		}
+	}
+
 	cout << "====================================\n\n";
 }
 
-void generateMonthlyPlan(const string& cnic, HomeLoan& homeLoan) {
+void generateMonthlyPlan(const string& cnic) {
 	ifstream file("applications.txt");
 	if (!file) {
 		cout << "No applications file found.\n";
@@ -1159,46 +1524,119 @@ void generateMonthlyPlan(const string& cnic, HomeLoan& homeLoan) {
 	string line;
 	bool foundApproved = false;
 
+	set<string> applicationsWithPlans;
+	ifstream approvedFile("approved.txt");
+	if (approvedFile) {
+		string approvedLine;
+		while (getline(approvedFile, approvedLine)) {
+			stringstream ss(approvedLine);
+			string appID;
+			getline(ss, appID, '#');
+			applicationsWithPlans.insert(appID);
+		}
+		approvedFile.close();
+	}
+
+	HomeLoan homeLoan;
+	homeLoan.initializeHomeLoan();
+
+	ScooterLoan scooterLoan;
+	scooterLoan.initializeScooterLoan();
+
+	CarLoan carLoan;
+	carLoan.initializeCarLoan();
+
 	while (getline(file, line)) {
 		stringstream ss(line);
 		string token;
 		int fieldCount = 0;
-		string fileCnic, status, appID;
-		int area = 0, homeSize = 0;
+		string fileCnic, status, appID, loanType, selectedMake;
+		int selectedArea = 0, selectedHomeIndex = -1, selectedCarIndex = -1, selectedScooterIndex = -1;
+		string selectedHomeDetails, selectedCarDetails, selectedScooterDetails;
 
 		while (getline(ss, token, '#')) {
 			fieldCount++;
-			if (fieldCount == 1) appID = token;
-			if (fieldCount == 7) fileCnic = token;
-			if (fieldCount == 36) status = token;
-			if (fieldCount == 37) area = stoi(token);
-			if (fieldCount == 38) homeSize = stoi(token);
+			switch (fieldCount) {
+			case 1: appID = token; break;
+			case 7: fileCnic = token; break;
+			case 36: status = token; break;
+			case 37: loanType = token; break;
+			case 38: selectedMake = token; break;
+			case 39: if (!token.empty()) selectedArea = stoi(token); break;
+			case 40: if (!token.empty()) selectedHomeIndex = stoi(token); break;
+			case 41: if (!token.empty()) selectedCarIndex = stoi(token); break;
+			case 42: if (!token.empty()) selectedScooterIndex = stoi(token); break;
+			case 43: selectedHomeDetails = token; break;
+			case 44: selectedCarDetails = token; break;
+			case 45: selectedScooterDetails = token; break;
+			}
 		}
 
-		if (fileCnic == cnic && status == "approved") {
+		if (fileCnic == cnic && status == "approved" &&
+			!loanType.empty() && loanType != "0" && loanType != "default" &&
+			applicationsWithPlans.find(appID) == applicationsWithPlans.end()) {
+
 			foundApproved = true;
 
 			int price = 0, downPayment = 0, installments = 0;
-			for (int i = 0; i < homeLoan.numberOfLines; i++) {
-				if (homeLoan.area[i] == area && homeLoan.size[i] == homeSize) {
-					price = homeLoan.price[i];
-					downPayment = homeLoan.downPayment[i];
-					installments = homeLoan.installments[i];
-					break;
+			string description = "";
+			bool loanFound = false;
+
+			if (loanType == "home" && selectedHomeIndex != -1) {
+				for (int i = 0; i < homeLoan.numberOfLines; i++) {
+					if (i == selectedHomeIndex) {
+						price = homeLoan.price[i];
+						downPayment = homeLoan.downPayment[i];
+						installments = homeLoan.installments[i];
+						description = "Home in Area " + to_string(homeLoan.area[i]) +
+							", Size: " + to_string(homeLoan.size[i]) + " Marla";
+						loanFound = true;
+						break;
+					}
+				}
+			}
+			else if (loanType == "car" && selectedCarIndex != -1) {
+				for (int i = 0; i < carLoan.numberOfLines; i++) {
+					if (i == selectedCarIndex) {
+						price = carLoan.price[i];
+						downPayment = carLoan.downPayment[i];
+						installments = carLoan.installments[i];
+						description = carLoan.make[i] + " " + carLoan.model[i] +
+							" (" + to_string(carLoan.year[i]) + ")";
+						loanFound = true;
+						break;
+					}
+				}
+			}
+			else if (loanType == "scooter" && selectedScooterIndex != -1) {
+				for (int i = 0; i < scooterLoan.numberOfLines; i++) {
+					if (i == selectedScooterIndex) {
+						price = scooterLoan.price[i];
+						downPayment = scooterLoan.downPayment[i];
+						installments = scooterLoan.installments[i];
+						description = scooterLoan.make[i] + " " + scooterLoan.model[i] + " Scooter";
+						loanFound = true;
+						break;
+					}
 				}
 			}
 
-			if (price == 0) {
-				cout << "Error: Could not find matching home data.\n";
+			if (!loanFound || price == 0) {
+				cout << "Error: Could not find matching loan data for application " << appID << ".\n";
+				cout << "Loan Type: " << loanType << ", Index: ";
+				if (loanType == "home") cout << selectedHomeIndex;
+				else if (loanType == "car") cout << selectedCarIndex;
+				else if (loanType == "scooter") cout << selectedScooterIndex;
+				cout << endl;
 				continue;
 			}
 
 			cout << "\n====================================\n";
-			cout << "   APPROVED APPLICATION FOUND\n";
+			cout << "   GENERATING PAYMENT PLAN\n";
 			cout << "====================================\n";
 			cout << "Application ID: " << appID << endl;
-			cout << "Area: " << area << endl;
-			cout << "Home Size: " << homeSize << " Marla" << endl;
+			cout << "Loan Type: " << loanType << endl;
+			cout << "Description: " << description << endl;
 			cout << "Total Price: " << price << endl;
 			cout << "Down Payment: " << downPayment << endl;
 			cout << "Installment Period: " << installments << " months" << endl;
@@ -1220,11 +1658,13 @@ void generateMonthlyPlan(const string& cnic, HomeLoan& homeLoan) {
 
 			int monthlyInstallment = (price - downPayment) / installments;
 			int remainingAmount = price - downPayment;
+			int totalAmountToPay = price - downPayment;
 
 			cout << "\n====================================\n";
 			cout << "   MONTHLY PAYMENT PLAN\n";
 			cout << "====================================\n";
 			cout << "Monthly Installment: " << monthlyInstallment << endl;
+			cout << "Total Amount to Pay: " << totalAmountToPay << endl;
 			cout << "====================================\n\n";
 
 			int currentMonth = startMonth - 1;
@@ -1240,13 +1680,138 @@ void generateMonthlyPlan(const string& cnic, HomeLoan& homeLoan) {
 
 			cout << "\nFinal Balance: 0" << endl;
 			cout << "====================================\n\n";
+
+			ofstream approvedFileOut("approved.txt", ios::app);
+			if (approvedFileOut) {
+				approvedFileOut << appID << "#"
+					<< cnic << "#"
+					<< loanType << "#"
+					<< description << "#"
+					<< price << "#"
+					<< downPayment << "#"
+					<< installments << "#"
+					<< monthlyInstallment << "#"
+					<< totalAmountToPay << "#"
+					<< startMonth << "#"
+					<< "active" << "#"  
+					<< totalAmountToPay << "#" 
+					<< "0" << "#" 
+					<< endl;
+
+				approvedFileOut.close();
+				cout << "Payment plan saved successfully for Application ID: " << appID << endl;
+			}
+			else {
+				cout << "Warning: Could not save payment plan.\n";
+			}
 		}
 	}
 
 	file.close();
 
 	if (!foundApproved) {
-		cout << "\nNo approved applications found for CNIC: " << cnic << endl;
+		cout << "\nNo approved applications found for CNIC: " << cnic << " that need payment plans.\n";
+		cout << "Note: Payment plans are only generated for approved applications that don't already have plans.\n";
+	}
+}
+
+void displayAllLoanDetailsByCNIC(const string& cnic) {
+	ifstream approvedFile("approved.txt");
+	if (!approvedFile) {
+		cout << "No approved loans file found.\n";
+		return;
+	}
+
+	string line;
+	bool foundLoans = false;
+	int loanCount = 0;
+
+	cout << "\n=============================================\n";
+	cout << "   ALL LOAN DETAILS FOR CNIC: " << cnic << "\n";
+	cout << "=============================================\n";
+
+	while (getline(approvedFile, line)) {
+		stringstream ss(line);
+		string token;
+		int fieldCount = 0;
+
+		string approvedAppID, approvedCNIC, loanType, description, paymentStatus;
+		int price = 0, downPayment = 0, installments = 0, monthlyInstallment = 0;
+		int totalAmount = 0, startMonth = 0, remainingAmount = 0, paidAmount = 0;
+
+		while (getline(ss, token, '#')) {
+			fieldCount++;
+			switch (fieldCount) {
+			case 1: approvedAppID = token; break;
+			case 2: approvedCNIC = token; break;
+			case 3: loanType = token; break;
+			case 4: description = token; break;
+			case 5: price = stoi(token); break;
+			case 6: downPayment = stoi(token); break;
+			case 7: installments = stoi(token); break;
+			case 8: monthlyInstallment = stoi(token); break;
+			case 9: totalAmount = stoi(token); break;
+			case 10: startMonth = stoi(token); break;
+			case 11: paymentStatus = token; break;
+			case 12: remainingAmount = stoi(token); break;
+			case 13: paidAmount = stoi(token); break;
+			}
+		}
+
+		if (approvedCNIC == cnic) {
+			foundLoans = true;
+			loanCount++;
+
+			cout << "\nLoan #" << loanCount << ":\n";
+			cout << "====================\n";
+			cout << "Application ID: " << approvedAppID << endl;
+			cout << "Loan Type: " << loanType << endl;
+			cout << "Description: " << description << endl;
+			cout << "Total Price: " << price << endl;
+			cout << "Down Payment: " << downPayment << endl;
+			cout << "Monthly Installment: " << monthlyInstallment << endl;
+			cout << "Total Loan Amount: " << totalAmount << endl;
+			cout << "Installment Period: " << installments << " months" << endl;
+			cout << "Starting Month: " << startMonth << endl;
+			cout << "Payment Status: " << paymentStatus << endl;
+			cout << "Amount Paid: " << paidAmount << endl;
+			cout << "Remaining Amount: " << remainingAmount << endl;
+
+			double progress = (totalAmount > 0) ? ((double)paidAmount / totalAmount) * 100 : 0;
+
+			int wholePart = (int)progress;
+			int decimalPart = (int)((progress - wholePart) * 100);
+			cout << "Payment Progress: " << wholePart << "." << (decimalPart < 10 ? "0" : "") << decimalPart << "%" << endl;
+
+			if (paymentStatus == "active" && installments > 0) {
+				cout << "\nPayment Timeline:\n";
+				string months[] = { "January", "February", "March", "April", "May", "June",
+								  "July", "August", "September", "October", "November", "December" };
+
+				int completedInstallments = paidAmount / monthlyInstallment;
+				int currentMonth = startMonth - 1;
+
+				for (int i = 1; i <= installments; i++) {
+					string status = (i <= completedInstallments) ? "[PAID]" : "[PENDING]";
+					cout << "Month " << i << " (" << months[currentMonth] << "): "
+						<< monthlyInstallment << " " << status << endl;
+					currentMonth = (currentMonth + 1) % 12;
+				}
+			}
+			cout << "------------------------" << endl;
+		}
+	}
+
+	approvedFile.close();
+
+	if (!foundLoans) {
+		cout << "No loans found for CNIC: " << cnic << endl;
+		cout << "This CNIC either has no approved loans or payment plans haven't been generated yet.\n";
+	}
+	else {
+		cout << "\n=============================================\n";
+		cout << "Total loans found: " << loanCount << endl;
+		cout << "=============================================\n\n";
 	}
 }
 
@@ -1354,6 +1919,34 @@ void startBot() {
 			}
 		}
 
+		if (input == "D" || input == "d") {
+			string cnic;
+			cin.ignore();
+			cout << "Enter CNIC (13 digits): ";
+			getline(cin, cnic);
+			if (all_of(cnic.begin(), cnic.end(), ::isdigit) && cnic.length() == 13) {
+				generateMonthlyPlan(cnic);
+				continue;
+			}
+			else {
+				cout << "Invalid CNIC. Please try again.\n\n";
+			}
+		}
+
+		if (input == "E" || input == "e") {
+			string cnic;
+			cin.ignore();
+			cout << "Enter CNIC (13 digits): ";
+			getline(cin, cnic);
+			if (all_of(cnic.begin(), cnic.end(), ::isdigit) && cnic.length() == 13) {
+				displayAllLoanDetailsByCNIC(cnic);
+				continue;
+			}
+			else {
+				cout << "Invalid CNIC. Please try again.\n\n";
+			}
+		}
+
 		if (showLoan) {
 			cout << "Would you like to apply for a loan? Y/n  ";
 			cin >> input;
@@ -1377,10 +1970,10 @@ void startBot() {
 				applicant.inputAnnualIncome();
 				applicant.inputAvgElectricityBill();
 				applicant.inputCurrentElectricityBill();
-				applicant.inputExistingLoanInfo();
 				applicant.inputRefereeDetails();
 				applicant.inputImagePaths();
-
+				applicant.inputLoanTypeAndSelection();
+				applicant.inputExistingLoanInfo();
 				applicant.displaySummary();
 
 				if (applicant.confirmSubmission()) {
@@ -1396,4 +1989,3 @@ void startBot() {
 		}
 	}
 }
-
