@@ -598,32 +598,32 @@ private:
         }
     }
 
-bool validateYesNo(const string& str) {
-    return str == "yes" || str == "y" || str == "no" || str == "n";
-}
+	bool validateYesNo(const string& str) {
+	    return str == "yes" || str == "y" || str == "no" || str == "n";
+	}
 
-bool validateLoanStatus(const string& str) {
-    return str == "active" || str == "inactive";
-}
+	bool validateLoanStatus(const string& str) {
+	    return str == "active" || str == "inactive";
+	}
 
-bool validateLoanCategory(const string& str) {
-    return str == "car" || str == "home" || str == "bike";
-}
+	bool validateLoanCategory(const string& str) {
+	    return str == "car" || str == "home" || str == "bike";
+	}
 
-void toLowerCase(string& str) {
-    transform(str.begin(), str.end(), str.begin(), ::tolower);
-}
+	void toLowerCase(string& str) {
+	    transform(str.begin(), str.end(), str.begin(), ::tolower);
+	}
 
-bool createDirectory(const std::string& path) {
-    int result = _mkdir(path.c_str());
-    return result == 0 || errno == EEXIST;
-}
+	bool createDirectory(const std::string& path) {
+	    int result = _mkdir(path.c_str());
+	    return result == 0 || errno == EEXIST;
+	}
 
-string generateApplicationID() {
-    static int lastID = 1000;
-    lastID++;
-    return to_string(lastID);
-}
+	string generateApplicationID() {
+	    static int lastID = 1000;
+	    lastID++;
+	    return to_string(lastID);
+	}
 
 public:
     string fullName, fatherName, postalAddress, contactNumber, email, cnic, cnicExpiryDate;
@@ -631,14 +631,14 @@ public:
     int numberOfDependents;
     float annualIncome, avgElectricityBill, currentElectricityBill;
 
-bool hasExistingLoan;
-ExistingLoan existingLoan;
-Referee referee1, referee2;
-ApplicantImages images;
-string applicationID;
-string applicationStatus; 
-int selectedArea;      
-int selectedHomeSize;
+	bool hasExistingLoan;
+	ExistingLoan existingLoan;
+	Referee referee1, referee2;
+	ApplicantImages images;
+	string applicationID;
+	string applicationStatus; 
+	int selectedArea;      
+	int selectedHomeSize;
 
 
 LoanSeeker() {
@@ -808,296 +808,296 @@ LoanSeeker() {
         }
     }
 
-void inputExistingLoanInfo() {
-    cout << "\n=== EXISTING LOAN INFORMATION ===\n";
-    string response;
-
-    while (true) {
-        cout << "Do you have any existing loans? (yes/no): ";
-        getline(cin, response);
-        toLowerCase(response);
-        if (validateYesNo(response)) break;
-        cout << "Invalid input! Please enter 'yes' or 'no'.\n";
-    }
-
-    if (response == "yes" || response == "y") {
-        hasExistingLoan = true;
-
-        while (true) {
-            cout << "Is the loan period Active or Inactive? (active/inactive): ";
-            getline(cin, existingLoan.loanPeriodStatus);
-            toLowerCase(existingLoan.loanPeriodStatus);
-            if (validateLoanStatus(existingLoan.loanPeriodStatus)) {
-                capitalizeWords(existingLoan.loanPeriodStatus);
-                break;
-            }
-            cout << "Invalid input! Please enter 'active' or 'inactive'.\n";
-        }
-
-        while (true) {
-            cout << "Enter Total Loan Amount (no commas): ";
-            getline(cin, existingLoan.totalLoanAmount);
-            if (validateNumeric(existingLoan.totalLoanAmount)) break;
-            cout << "Invalid input! Must contain only digits.\n";
-        }
-
-        while (true) {
-            cout << "Enter Amount Returned (no commas): ";
-            getline(cin, existingLoan.amountReturned);
-            if (validateNumeric(existingLoan.amountReturned)) break;
-            cout << "Invalid input! Must contain only digits.\n";
-        }
-
-        while (true) {
-            cout << "Enter Loan Amount Still Due (no commas): ";
-            getline(cin, existingLoan.loanAmountDue);
-            if (validateNumeric(existingLoan.loanAmountDue)) break;
-            cout << "Invalid input! Must contain only digits.\n";
-        }
-
-        while (true) {
-            cout << "Enter Bank Name: ";
-            getline(cin, existingLoan.bankName);
-            if (validateAlphabetString(existingLoan.bankName)) {
-                capitalizeWords(existingLoan.bankName);
-                break;
-            }
-            cout << "Bank Name should contain only alphabets and spaces!\n";
-        }
-
-        while (true) {
-            cout << "Enter Loan Category (car/home/bike): ";
-            getline(cin, existingLoan.loanCategory);
-            toLowerCase(existingLoan.loanCategory);
-            if (validateLoanCategory(existingLoan.loanCategory)) {
-                capitalizeWords(existingLoan.loanCategory);
-                break;
-            }
-            cout << "Invalid input! Please enter 'car', 'home', or 'bike'.\n";
-        }
-    }
-    else {
-        hasExistingLoan = false;
-        existingLoan.loanPeriodStatus = "N/A";
-        existingLoan.totalLoanAmount = "0";
-        existingLoan.amountReturned = "0";
-        existingLoan.loanAmountDue = "0";
-        existingLoan.bankName = "N/A";
-        existingLoan.loanCategory = "N/A";
-    }
-}
-
-void inputRefereeDetails() {
-    cout << "\n=== REFEREE DETAILS ===\n";
-
-    cout << "\n--- Referee 1 Information ---\n";
-
-    while (true) {
-        cout << "Enter Name of Referee 1: ";
-        getline(cin, referee1.name);
-        if (validateAlphabetString(referee1.name)) {
-            capitalizeWords(referee1.name);
-            break;
-        }
-        cout << "Name should contain only alphabets and spaces!\n";
-    }
-
-    while (true) {
-        cout << "Enter CNIC of Referee 1 (13 digits, no dashes): ";
-        getline(cin, referee1.cnic);
-        if (validateCnic(referee1.cnic)) break;
-        cout << "Invalid CNIC! Must be exactly 13 digits.\n";
-    }
-
-    while (true) {
-        cout << "Enter CNIC Issue Date of Referee 1 (DD-MM-YYYY): ";
-        getline(cin, referee1.cnicIssueDate);
-        if (validateDate(referee1.cnicIssueDate)) break;
-        cout << "Invalid date! Format must be DD-MM-YYYY with valid day/month/year values.\n";
-    }
-
-    while (true) {
-        cout << "Enter Phone Number of Referee 1 (11 or 13 digits): ";
-        getline(cin, referee1.phoneNumber);
-        if (validateContactNumber(referee1.phoneNumber)) break;
-        cout << "Invalid Phone Number! Must be 11 digits starting with 0 or 13 digits starting with +92.\n";
-    }
-
-    while (true) {
-        cout << "Enter Email Address of Referee 1: ";
-        getline(cin, referee1.emailAddress);
-        toLowerCase(referee1.emailAddress);
-        if (validateEmail(referee1.emailAddress)) break;
-        cout << "Invalid Email Address! Must contain @ symbol.\n";
-    }
-
-    cout << "\n--- Referee 2 Information ---\n";
-
-    while (true) {
-        cout << "Enter Name of Referee 2: ";
-        getline(cin, referee2.name);
-        if (validateAlphabetString(referee2.name)) {
-            capitalizeWords(referee2.name);
-            break;
-        }
-        cout << "Name should contain only alphabets and spaces!\n";
-    }
-
-    while (true) {
-        cout << "Enter CNIC of Referee 2 (13 digits, no dashes): ";
-        getline(cin, referee2.cnic);
-        if (validateCnic(referee2.cnic)) break;
-        cout << "Invalid CNIC! Must be exactly 13 digits.\n";
-    }
-
-    while (true) {
-        cout << "Enter CNIC Issue Date of Referee 2 (DD-MM-YYYY): ";
-        getline(cin, referee2.cnicIssueDate);
-        if (validateDate(referee2.cnicIssueDate)) break;
-        cout << "Invalid date! Format must be DD-MM-YYYY with valid day/month/year values.\n";
-    }
-
-    while (true) {
-        cout << "Enter Phone Number of Referee 2 (11 or 13 digits): ";
-        getline(cin, referee2.phoneNumber);
-        if (validateContactNumber(referee2.phoneNumber)) break;
-        cout << "Invalid Phone Number! Must be 11 digits starting with 0 or 13 digits starting with +92.\n";
-    }
-
-    while (true) {
-        cout << "Enter Email Address of Referee 2: ";
-        getline(cin, referee2.emailAddress);
-        toLowerCase(referee2.emailAddress);
-        if (validateEmail(referee2.emailAddress)) break;
-        cout << "Invalid Email Address! Must contain @ symbol.\n";
-    }
-}
-
-void inputImagePaths() {
-    cout << "\n=== DOCUMENT IMAGES ===\n";
-
-    applicationID = generateApplicationID();
-
-    string dataFolder = "./data";
-    string appFolder = dataFolder + "/" + applicationID;
-
-    createDirectory(dataFolder);
-    createDirectory(appFolder);
-
-    cout << "Your Application ID is: " << applicationID << endl;
-    cout << "All images will be saved in folder: " << appFolder << endl;
-    cout << "\nPlease provide the file names for the following documents:\n";
-    cout << "(Images should be placed in the " << appFolder << " folder)\n\n";
-
-    cout << "Enter filename for CNIC Front (e.g. cnic_front.jpg): ";
-    string filename;
-    getline(cin, filename);
-    images.cnicFrontPath = appFolder + "/" + filename;
-
-    cout << "Enter filename for CNIC Back (e.g., cnic_back.jpg): ";
-    getline(cin, filename);
-    images.cnicBackPath = appFolder + "/" + filename;
-
-    cout << "Enter filename for Recent Electricity Bill (e.g. electricity_bill.jpg): ";
-    getline(cin, filename);
-    images.electricityBillPath = appFolder + "/" + filename;
-
-    cout << "Enter filename for Salary Slip/Bank Statement (e.g. salary_slip.jpg): ";
-    getline(cin, filename);
-    images.salarySlipPath = appFolder + "/" + filename;
-
-    cout << "\nImage paths recorded successfully!\n";
-}
-
-void displaySummary() {
-	cout << "\n====================================\n";
-	cout << "   APPLICATION SUMMARY\n";
-	cout << "====================================\n\n";
-	cout << "Application ID: " << applicationID << endl;
-	cout << "Full Name: " << fullName << endl;
-	cout << "Father's Name: " << fatherName << endl;
-	cout << "CNIC: " << cnic << endl;
-	cout << "Contact: " << contactNumber << endl;
-	cout << "Email: " << email << endl;
-	cout << "Employment: " << employmentStatus << endl;
-	cout << "Annual Income: " << annualIncome << endl;
-	cout << "Selected Area: " << selectedArea << endl;
-	cout << "Selected Home Size: " << selectedHomeSize << " Marla" << endl;
-	cout << "\nExisting Loan: " << (hasExistingLoan ? "Yes" : "No") << endl;
-	if (hasExistingLoan) {
-		cout << "  Bank: " << existingLoan.bankName << endl;
-		cout << "  Category: " << existingLoan.loanCategory << endl;
-		cout << "  Status: " << existingLoan.loanPeriodStatus << endl;
+	void inputExistingLoanInfo() {
+	    cout << "\n=== EXISTING LOAN INFORMATION ===\n";
+	    string response;
+	
+	    while (true) {
+	        cout << "Do you have any existing loans? (yes/no): ";
+	        getline(cin, response);
+	        toLowerCase(response);
+	        if (validateYesNo(response)) break;
+	        cout << "Invalid input! Please enter 'yes' or 'no'.\n";
+	    }
+	
+	    if (response == "yes" || response == "y") {
+	        hasExistingLoan = true;
+	
+	        while (true) {
+	            cout << "Is the loan period Active or Inactive? (active/inactive): ";
+	            getline(cin, existingLoan.loanPeriodStatus);
+	            toLowerCase(existingLoan.loanPeriodStatus);
+	            if (validateLoanStatus(existingLoan.loanPeriodStatus)) {
+	                capitalizeWords(existingLoan.loanPeriodStatus);
+	                break;
+	            }
+	            cout << "Invalid input! Please enter 'active' or 'inactive'.\n";
+	        }
+	
+	        while (true) {
+	            cout << "Enter Total Loan Amount (no commas): ";
+	            getline(cin, existingLoan.totalLoanAmount);
+	            if (validateNumeric(existingLoan.totalLoanAmount)) break;
+	            cout << "Invalid input! Must contain only digits.\n";
+	        }
+	
+	        while (true) {
+	            cout << "Enter Amount Returned (no commas): ";
+	            getline(cin, existingLoan.amountReturned);
+	            if (validateNumeric(existingLoan.amountReturned)) break;
+	            cout << "Invalid input! Must contain only digits.\n";
+	        }
+	
+	        while (true) {
+	            cout << "Enter Loan Amount Still Due (no commas): ";
+	            getline(cin, existingLoan.loanAmountDue);
+	            if (validateNumeric(existingLoan.loanAmountDue)) break;
+	            cout << "Invalid input! Must contain only digits.\n";
+	        }
+	
+	        while (true) {
+	            cout << "Enter Bank Name: ";
+	            getline(cin, existingLoan.bankName);
+	            if (validateAlphabetString(existingLoan.bankName)) {
+	                capitalizeWords(existingLoan.bankName);
+	                break;
+	            }
+	            cout << "Bank Name should contain only alphabets and spaces!\n";
+	        }
+	
+	        while (true) {
+	            cout << "Enter Loan Category (car/home/bike): ";
+	            getline(cin, existingLoan.loanCategory);
+	            toLowerCase(existingLoan.loanCategory);
+	            if (validateLoanCategory(existingLoan.loanCategory)) {
+	                capitalizeWords(existingLoan.loanCategory);
+	                break;
+	            }
+	            cout << "Invalid input! Please enter 'car', 'home', or 'bike'.\n";
+	        }
+	    }
+	    else {
+	        hasExistingLoan = false;
+	        existingLoan.loanPeriodStatus = "N/A";
+	        existingLoan.totalLoanAmount = "0";
+	        existingLoan.amountReturned = "0";
+	        existingLoan.loanAmountDue = "0";
+	        existingLoan.bankName = "N/A";
+	        existingLoan.loanCategory = "N/A";
+	    }
 	}
-	cout << "\nReferee 1: " << referee1.name << " (" << referee1.cnic << ")" << endl;
-	cout << "Referee 2: " << referee2.name << " (" << referee2.cnic << ")" << endl;
-	cout << "\n====================================\n";
-}
 
-bool confirmSubmission() {
-	string response;
-	while (true) {
-		cout << "\nDo you want to submit this application? (yes/no): ";
-		getline(cin, response);
-		toLowerCase(response);
-		if (validateYesNo(response)) {
-			return (response == "yes" || response == "y");
+	void inputRefereeDetails() {
+	    cout << "\n=== REFEREE DETAILS ===\n";
+	
+	    cout << "\n--- Referee 1 Information ---\n";
+	
+	    while (true) {
+	        cout << "Enter Name of Referee 1: ";
+	        getline(cin, referee1.name);
+	        if (validateAlphabetString(referee1.name)) {
+	            capitalizeWords(referee1.name);
+	            break;
+	        }
+	        cout << "Name should contain only alphabets and spaces!\n";
+	    }
+	
+	    while (true) {
+	        cout << "Enter CNIC of Referee 1 (13 digits, no dashes): ";
+	        getline(cin, referee1.cnic);
+	        if (validateCnic(referee1.cnic)) break;
+	        cout << "Invalid CNIC! Must be exactly 13 digits.\n";
+	    }
+	
+	    while (true) {
+	        cout << "Enter CNIC Issue Date of Referee 1 (DD-MM-YYYY): ";
+	        getline(cin, referee1.cnicIssueDate);
+	        if (validateDate(referee1.cnicIssueDate)) break;
+	        cout << "Invalid date! Format must be DD-MM-YYYY with valid day/month/year values.\n";
+	    }
+	
+	    while (true) {
+	        cout << "Enter Phone Number of Referee 1 (11 or 13 digits): ";
+	        getline(cin, referee1.phoneNumber);
+	        if (validateContactNumber(referee1.phoneNumber)) break;
+	        cout << "Invalid Phone Number! Must be 11 digits starting with 0 or 13 digits starting with +92.\n";
+	    }
+	
+	    while (true) {
+	        cout << "Enter Email Address of Referee 1: ";
+	        getline(cin, referee1.emailAddress);
+	        toLowerCase(referee1.emailAddress);
+	        if (validateEmail(referee1.emailAddress)) break;
+	        cout << "Invalid Email Address! Must contain @ symbol.\n";
+	    }
+	
+	    cout << "\n--- Referee 2 Information ---\n";
+	
+	    while (true) {
+	        cout << "Enter Name of Referee 2: ";
+	        getline(cin, referee2.name);
+	        if (validateAlphabetString(referee2.name)) {
+	            capitalizeWords(referee2.name);
+	            break;
+	        }
+	        cout << "Name should contain only alphabets and spaces!\n";
+	    }
+	
+	    while (true) {
+	        cout << "Enter CNIC of Referee 2 (13 digits, no dashes): ";
+	        getline(cin, referee2.cnic);
+	        if (validateCnic(referee2.cnic)) break;
+	        cout << "Invalid CNIC! Must be exactly 13 digits.\n";
+	    }
+	
+	    while (true) {
+	        cout << "Enter CNIC Issue Date of Referee 2 (DD-MM-YYYY): ";
+	        getline(cin, referee2.cnicIssueDate);
+	        if (validateDate(referee2.cnicIssueDate)) break;
+	        cout << "Invalid date! Format must be DD-MM-YYYY with valid day/month/year values.\n";
+	    }
+	
+	    while (true) {
+	        cout << "Enter Phone Number of Referee 2 (11 or 13 digits): ";
+	        getline(cin, referee2.phoneNumber);
+	        if (validateContactNumber(referee2.phoneNumber)) break;
+	        cout << "Invalid Phone Number! Must be 11 digits starting with 0 or 13 digits starting with +92.\n";
+	    }
+	
+	    while (true) {
+	        cout << "Enter Email Address of Referee 2: ";
+	        getline(cin, referee2.emailAddress);
+	        toLowerCase(referee2.emailAddress);
+	        if (validateEmail(referee2.emailAddress)) break;
+	        cout << "Invalid Email Address! Must contain @ symbol.\n";
+	    }
+	}
+
+	void inputImagePaths() {
+	    cout << "\n=== DOCUMENT IMAGES ===\n";
+	
+	    applicationID = generateApplicationID();
+	
+	    string dataFolder = "./data";
+	    string appFolder = dataFolder + "/" + applicationID;
+	
+	    createDirectory(dataFolder);
+	    createDirectory(appFolder);
+	
+	    cout << "Your Application ID is: " << applicationID << endl;
+	    cout << "All images will be saved in folder: " << appFolder << endl;
+	    cout << "\nPlease provide the file names for the following documents:\n";
+	    cout << "(Images should be placed in the " << appFolder << " folder)\n\n";
+	
+	    cout << "Enter filename for CNIC Front (e.g. cnic_front.jpg): ";
+	    string filename;
+	    getline(cin, filename);
+	    images.cnicFrontPath = appFolder + "/" + filename;
+	
+	    cout << "Enter filename for CNIC Back (e.g., cnic_back.jpg): ";
+	    getline(cin, filename);
+	    images.cnicBackPath = appFolder + "/" + filename;
+	
+	    cout << "Enter filename for Recent Electricity Bill (e.g. electricity_bill.jpg): ";
+	    getline(cin, filename);
+	    images.electricityBillPath = appFolder + "/" + filename;
+	
+	    cout << "Enter filename for Salary Slip/Bank Statement (e.g. salary_slip.jpg): ";
+	    getline(cin, filename);
+	    images.salarySlipPath = appFolder + "/" + filename;
+	
+	    cout << "\nImage paths recorded successfully!\n";
+	}
+
+	void displaySummary() {
+		cout << "\n====================================\n";
+		cout << "   APPLICATION SUMMARY\n";
+		cout << "====================================\n\n";
+		cout << "Application ID: " << applicationID << endl;
+		cout << "Full Name: " << fullName << endl;
+		cout << "Father's Name: " << fatherName << endl;
+		cout << "CNIC: " << cnic << endl;
+		cout << "Contact: " << contactNumber << endl;
+		cout << "Email: " << email << endl;
+		cout << "Employment: " << employmentStatus << endl;
+		cout << "Annual Income: " << annualIncome << endl;
+		cout << "Selected Area: " << selectedArea << endl;
+		cout << "Selected Home Size: " << selectedHomeSize << " Marla" << endl;
+		cout << "\nExisting Loan: " << (hasExistingLoan ? "Yes" : "No") << endl;
+		if (hasExistingLoan) {
+			cout << "  Bank: " << existingLoan.bankName << endl;
+			cout << "  Category: " << existingLoan.loanCategory << endl;
+			cout << "  Status: " << existingLoan.loanPeriodStatus << endl;
 		}
-		cout << "Invalid input! Please enter 'yes' or 'no'.\n";
+		cout << "\nReferee 1: " << referee1.name << " (" << referee1.cnic << ")" << endl;
+		cout << "Referee 2: " << referee2.name << " (" << referee2.cnic << ")" << endl;
+		cout << "\n====================================\n";
 	}
-}
 
-void saveToFile() {
-    ofstream file("applications.txt", ios::app);
-    if (!file) {
-        cout << "Error! Could not open applications.txt for writing!\n";
-        return;
-    }
-
-    file << applicationID << "#"
-		<< fullName << "#"
-        << fatherName << "#"
-        << postalAddress << "#"
-        << contactNumber << "#"
-        << email << "#"
-        << cnic << "#"
-        << cnicExpiryDate << "#"
-        << employmentStatus << "#"
-        << maritalStatus << "#"
-        << gender << "#"
-        << numberOfDependents << "#"
-        << annualIncome << "#"
-        << avgElectricityBill << "#"
-        << currentElectricityBill << "#"
-        << existingLoan.loanPeriodStatus << "#"
-        << existingLoan.totalLoanAmount << "#"
-        << existingLoan.amountReturned << "#"
-        << existingLoan.loanAmountDue << "#"
-        << existingLoan.bankName << "#"
-        << existingLoan.loanCategory << "#"
-        << referee1.name << "#"
-        << referee1.cnic << "#"
-        << referee1.cnicIssueDate << "#"
-        << referee1.phoneNumber << "#"
-        << referee1.emailAddress << "#"
-        << referee2.name << "#"
-        << referee2.cnic << "#"
-        << referee2.cnicIssueDate << "#"
-        << referee2.phoneNumber << "#"
-        << referee2.emailAddress << "#"
-        << images.cnicFrontPath << "#"
-        << images.cnicBackPath << "#"
-        << images.electricityBillPath << "#"
-        << images.salarySlipPath << "#"
-		<< applicationStatus << "#"  << endl;
-
-    file.close();
-    cout << "\n====================================\n";
-    cout << "Application submitted successfully!\n";
-    cout << "Application ID: " << applicationID << endl;
-	cout << "Status: " << applicationStatus << endl;
-    cout << "====================================\n";
+	bool confirmSubmission() {
+		string response;
+		while (true) {
+			cout << "\nDo you want to submit this application? (yes/no): ";
+			getline(cin, response);
+			toLowerCase(response);
+			if (validateYesNo(response)) {
+				return (response == "yes" || response == "y");
+			}
+			cout << "Invalid input! Please enter 'yes' or 'no'.\n";
+		}
 	}
+
+	void saveToFile() {
+	    ofstream file("applications.txt", ios::app);
+	    if (!file) {
+	        cout << "Error! Could not open applications.txt for writing!\n";
+	        return;
+	    }
+	
+	    file << applicationID << "#"
+			<< fullName << "#"
+	        << fatherName << "#"
+	        << postalAddress << "#"
+	        << contactNumber << "#"
+	        << email << "#"
+	        << cnic << "#"
+	        << cnicExpiryDate << "#"
+	        << employmentStatus << "#"
+	        << maritalStatus << "#"
+	        << gender << "#"
+	        << numberOfDependents << "#"
+	        << annualIncome << "#"
+	        << avgElectricityBill << "#"
+	        << currentElectricityBill << "#"
+	        << existingLoan.loanPeriodStatus << "#"
+	        << existingLoan.totalLoanAmount << "#"
+	        << existingLoan.amountReturned << "#"
+	        << existingLoan.loanAmountDue << "#"
+	        << existingLoan.bankName << "#"
+	        << existingLoan.loanCategory << "#"
+	        << referee1.name << "#"
+	        << referee1.cnic << "#"
+	        << referee1.cnicIssueDate << "#"
+	        << referee1.phoneNumber << "#"
+	        << referee1.emailAddress << "#"
+	        << referee2.name << "#"
+	        << referee2.cnic << "#"
+	        << referee2.cnicIssueDate << "#"
+	        << referee2.phoneNumber << "#"
+	        << referee2.emailAddress << "#"
+	        << images.cnicFrontPath << "#"
+	        << images.cnicBackPath << "#"
+	        << images.electricityBillPath << "#"
+	        << images.salarySlipPath << "#"
+			<< applicationStatus << "#"  << endl;
+	
+	    file.close();
+	    cout << "\n====================================\n";
+	    cout << "Application submitted successfully!\n";
+	    cout << "Application ID: " << applicationID << endl;
+		cout << "Status: " << applicationStatus << endl;
+	    cout << "====================================\n";
+		}
 };
 
 void checkApplicationsByCNIC(const string& cnic) {
@@ -1396,3 +1396,4 @@ void startBot() {
 		}
 	}
 }
+
