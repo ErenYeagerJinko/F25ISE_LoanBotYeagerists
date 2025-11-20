@@ -9,6 +9,10 @@
 #include <sstream>
 #include <vector>
 #include <set>
+#include <sys/stat.h>
+#include <cstring>
+#include <cstdlib>
+#include <ctime>
 using namespace std;
 
 int numberOfLinesInFile(string fileName) {
@@ -616,15 +620,47 @@ private:
 		transform(str.begin(), str.end(), str.begin(), ::tolower);
 	}
 
-	bool createDirectory(const std::string& path) {
-		int result = _mkdir(path.c_str());
-		return result == 0 || errno == EEXIST;
+	vector<string> getExistingIDs(const string& filename) {
+		vector<string> ids;
+		ifstream file(filename);
+
+		if (file.is_open()) {
+			string line;
+			while (getline(file, line)) {
+				stringstream ss(line);
+				string id;
+				getline(ss, id, '#');
+				ids.push_back(id); 
+			}
+			file.close();
+		}
+		else {
+			cout << "Could not open the file " << filename << endl;
+		}
+		return ids;
 	}
 
 	string generateApplicationID() {
-		static int lastID = 1000;
-		lastID++;
-		return to_string(lastID);
+		srand(time(0));
+		vector<string> existingIDs = getExistingIDs("applications.txt");
+
+		string newID;
+		bool isUnique = false;
+
+		while (!isUnique) {
+			int randomID = rand() % 9000 + 1000;
+			newID = to_string(randomID);
+
+			isUnique = true;
+			for (const string& id : existingIDs) {
+				if (id == newID) {
+					isUnique = false; 
+					break;
+				}
+			}
+		}
+
+		return newID;
 	}
 
 	void selectHomeLoan() {
@@ -824,6 +860,45 @@ private:
 		if (!all_of(str.begin(), str.end(), ::isdigit)) return false;
 		int choice = stoi(str);
 		return choice >= 1 && choice <= maxChoice;
+	}
+
+	bool verifyImageFileExistence(const string& filePath) {
+		ifstream file(filePath);
+		return file.is_open();
+	}
+
+	bool isImageFile(const string& filePath) {
+		string extensions[] = { ".jpg", ".jpeg", ".png", ".bmp", ".gif" };
+		for (const auto& ext : extensions) {
+			if (filePath.size() >= ext.size() && filePath.compare(filePath.size() - ext.size(), ext.size(), ext) == 0) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	bool createDirectory(const string& dirPath) {
+		struct stat info;
+		if (stat(dirPath.c_str(), &info) != 0) {  
+			if (_mkdir(dirPath.c_str()) != 0) {
+				cout << "Error creating directory: " << dirPath << endl;
+				return false;
+			}
+		}
+		return true;
+	}
+
+	bool copyImage(const string& source, const string& destination) {
+		ifstream src(source, ios::binary);
+		ofstream dest(destination, ios::binary);
+
+		if (!src || !dest) {
+			cout << "Error opening files for copying!" << endl;
+			return false;
+		}
+
+		dest << src.rdbuf();  
+		return true;
 	}
 
 public:
@@ -1202,27 +1277,98 @@ LoanSeeker() {
 
 		cout << "Your Application ID is: " << applicationID << endl;
 		cout << "All images will be saved in folder: " << appFolder << endl;
-		cout << "\nPlease provide the file names for the following documents:\n";
-		cout << "(Images should be placed in the " << appFolder << " folder)\n\n";
+		cout << "\nPlease provide the FULL FILE PATHS for the following documents:\n";
+		cout << "(They will be copied automatically into: " << appFolder << ")\n\n";
 
-		cout << "Enter filename for CNIC Front (e.g. cnic_front.jpg): ";
 		string filename;
-		getline(cin, filename);
-		images.cnicFrontPath = appFolder + "/" + filename;
+		string sourcePath;
+		string destPath;
 
-		cout << "Enter filename for CNIC Back (e.g. cnic_back.jpg): ";
-		getline(cin, filename);
-		images.cnicBackPath = appFolder + "/" + filename;
+		while (true) {
+			cout << "Enter file path for CNIC Front (e.g. C:/docs/cnic_front.jpg): ";
+			getline(cin, sourcePath);
 
-		cout << "Enter filename for Recent Electricity Bill (e.g. electricity_bill.jpg): ";
-		getline(cin, filename);
-		images.electricityBillPath = appFolder + "/" + filename;
+			if (!verifyImageFileExistence(sourcePath)) {
+				cout << "File does not exist. Try again.\n";
+				continue;
+			}
+			if (!isImageFile(sourcePath)) {
+				cout << "Not a valid image file. Try again.\n";
+				continue;
+			}
 
-		cout << "Enter filename for Salary Slip/Bank Statement (e.g. salary_slip.jpg): ";
-		getline(cin, filename);
-		images.salarySlipPath = appFolder + "/" + filename;
+			filename = sourcePath.substr(sourcePath.find_last_of("/\\") + 1);
+			destPath = appFolder + "/" + filename;
 
-		cout << "\nImage paths recorded successfully!\n";
+			copyImage(sourcePath, destPath);
+			images.cnicFrontPath = destPath;
+			break;
+		}
+
+		while (true) {
+			cout << "Enter file path for CNIC Back: ";
+			getline(cin, sourcePath);
+
+			if (!verifyImageFileExistence(sourcePath)) {
+				cout << "File does not exist. Try again.\n";
+				continue;
+			}
+			if (!isImageFile(sourcePath)) {
+				cout << "Not a valid image file. Try again.\n";
+				continue;
+			}
+
+			filename = sourcePath.substr(sourcePath.find_last_of("/\\") + 1);
+			destPath = appFolder + "/" + filename;
+
+			copyImage(sourcePath, destPath);
+			images.cnicBackPath = destPath;
+			break;
+		}
+
+		while (true) {
+			cout << "Enter file path for Recent Electricity Bill: ";
+			getline(cin, sourcePath);
+
+			if (!verifyImageFileExistence(sourcePath)) {
+				cout << "File does not exist. Try again.\n";
+				continue;
+			}
+			if (!isImageFile(sourcePath)) {
+				cout << "Not a valid image file. Try again.\n";
+				continue;
+			}
+
+			filename = sourcePath.substr(sourcePath.find_last_of("/\\") + 1);
+			destPath = appFolder + "/" + filename;
+
+			copyImage(sourcePath, destPath);
+			images.electricityBillPath = destPath;
+			break;
+		}
+
+		while (true) {
+			cout << "Enter file path for Salary Slip/Bank Statement: ";
+			getline(cin, sourcePath);
+
+			if (!verifyImageFileExistence(sourcePath)) {
+				cout << "File does not exist. Try again.\n";
+				continue;
+			}
+			if (!isImageFile(sourcePath)) {
+				cout << "Not a valid image file. Try again.\n";
+				continue;
+			}
+
+			filename = sourcePath.substr(sourcePath.find_last_of("/\\") + 1);
+			destPath = appFolder + "/" + filename;
+
+			copyImage(sourcePath, destPath);
+			images.salarySlipPath = destPath;
+			break;
+		}
+
+		cout << "\nImage paths validated and copied successfully!\n";
 	}
 
 	void inputLoanTypeAndSelection() {
@@ -1266,7 +1412,22 @@ LoanSeeker() {
 		if (loanType == "home") {
 			cout << "Selected Area: " << selectedArea << endl;
 			if (!selectedHomeDetails.empty()) {
-				cout << "Home Details: " << selectedHomeDetails << endl;
+				stringstream ss(selectedHomeDetails);
+				string token;
+				while (getline(ss, token, ',')) {
+					size_t colonPos = token.find(':');
+					if (colonPos != string::npos) {
+						string key = token.substr(0, colonPos);
+						string value = token.substr(colonPos + 1);
+						if (!key.empty()) {
+							key[0] = toupper(key[0]);
+						}
+						cout << key << ": " << value << endl;
+					}
+					else {
+						cout << token << endl;
+					}
+				}
 			}
 			else {
 				cout << "Home Details: Not specified\n";
@@ -1274,7 +1435,22 @@ LoanSeeker() {
 		}
 		else if (loanType == "car") {
 			if (!selectedCarDetails.empty()) {
-				cout << "Car Details: " << selectedCarDetails << endl;
+				stringstream ss(selectedCarDetails);
+				string token;
+				while (getline(ss, token, ',')) {
+					size_t colonPos = token.find(':');
+					if (colonPos != string::npos) {
+						string key = token.substr(0, colonPos);
+						string value = token.substr(colonPos + 1);
+						if (!key.empty()) {
+							key[0] = toupper(key[0]);
+						}
+						cout << key << ": " << value << endl;
+					}
+					else {
+						cout << token << endl;
+					}
+				}
 			}
 			else {
 				cout << "Car Details: Not specified\n";
@@ -1285,7 +1461,22 @@ LoanSeeker() {
 		}
 		else if (loanType == "scooter") {
 			if (!selectedScooterDetails.empty()) {
-				cout << "Scooter Details: " << selectedScooterDetails << endl;
+				stringstream ss(selectedScooterDetails);
+				string token;
+				while (getline(ss, token, ',')) {
+					size_t colonPos = token.find(':');
+					if (colonPos != string::npos) {
+						string key = token.substr(0, colonPos);
+						string value = token.substr(colonPos + 1);
+						if (!key.empty()) {
+							key[0] = toupper(key[0]);
+						}
+						cout << key << ": " << value << endl;
+					}
+					else {
+						cout << token << endl;
+					}
+				}
 			}
 			else {
 				cout << "Scooter Details: Not specified\n";
@@ -1296,17 +1487,6 @@ LoanSeeker() {
 		}
 		else {
 			cout << "No loan type selected\n";
-		}
-
-		cout << "\n--- EXISTING LOAN INFORMATION ---\n";
-		cout << "Existing Loan: " << (hasExistingLoan ? "Yes" : "No") << endl;
-		if (hasExistingLoan) {
-			cout << "  Bank: " << existingLoan.bankName << endl;
-			cout << "  Category: " << existingLoan.loanCategory << endl;
-			cout << "  Status: " << existingLoan.loanPeriodStatus << endl;
-			cout << "  Total Amount: " << existingLoan.totalLoanAmount << endl;
-			cout << "  Amount Returned: " << existingLoan.amountReturned << endl;
-			cout << "  Amount Due: " << existingLoan.loanAmountDue << endl;
 		}
 
 		cout << "\n--- REFEREE INFORMATION ---\n";
@@ -1947,7 +2127,7 @@ void startBot() {
 			}
 		}
 
-		if (showLoan) {
+		if (input == "L" || input == "l") {
 			cout << "Would you like to apply for a loan? Y/n  ";
 			cin >> input;
 			if (input == "Y" || input == "y") {
@@ -1973,7 +2153,6 @@ void startBot() {
 				applicant.inputRefereeDetails();
 				applicant.inputImagePaths();
 				applicant.inputLoanTypeAndSelection();
-				applicant.inputExistingLoanInfo();
 				applicant.displaySummary();
 
 				if (applicant.confirmSubmission()) {
