@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include <cstdlib>
+#include <algorithm>
 using namespace std;
 
 struct Application {
@@ -125,6 +126,123 @@ void saveApplications(const vector<Application>& apps) {
     file.close();
 }
 
+void addToApproved(const Application& app) {
+    ofstream file("approved.txt", ios::app);
+    if (!file.is_open()) {
+        cout << "Error: Could not write to approved.txt!\n";
+        return;
+    }
+
+    file << app.applicationID << "#"
+        << app.fullName << "#" << app.fatherName << "#" << app.postalAddress << "#"
+        << app.contactNumber << "#" << app.email << "#" << app.cnic << "#"
+        << app.cnicExpiryDate << "#" << app.employmentStatus << "#"
+        << app.maritalStatus << "#" << app.gender << "#"
+        << app.numberOfDependents << "#" << app.annualIncome << "#"
+        << app.avgElectricityBill << "#" << app.currentElectricityBill << "#"
+        << app.loanPeriodStatus << "#" << app.totalLoanAmount << "#"
+        << app.amountReturned << "#" << app.loanAmountDue << "#"
+        << app.bankName << "#" << app.loanCategory << "#"
+        << app.referee1Name << "#" << app.referee1Cnic << "#"
+        << app.referee1IssueDate << "#" << app.referee1Phone << "#"
+        << app.referee1Email << "#"
+        << app.referee2Name << "#" << app.referee2Cnic << "#"
+        << app.referee2IssueDate << "#" << app.referee2Phone << "#"
+        << app.referee2Email << "#"
+        << app.cnicFrontPath << "#" << app.cnicBackPath << "#"
+        << app.electricityBillPath << "#" << app.salarySlipPath << "#"
+        << "approved" << "#" << app.loanType << "#"
+        << app.selectedMake << "#" << app.selectedArea << "#"
+        << app.selectedHomeIndex << "#" << app.selectedCarIndex << "#"
+        << app.selectedScooterIndex << "#"
+        << app.selectedHomeDetails << "#" << app.selectedCarDetails << "#"
+        << app.selectedScooterDetails << "#\n";
+
+    file.close();
+    cout << "Application added to approved.txt\n";
+}
+
+void removeFromApproved(const string& applicationID) {
+    vector<Application> approvedApps;
+    ifstream file("approved.txt");
+    if (!file.is_open()) {
+        cout << "Error: approved.txt not found.\n";
+        return;
+    }
+
+    string line;
+    while (getline(file, line)) {
+        if (line.empty()) continue;
+        stringstream ss(line);
+        Application app;
+        string token;
+
+        vector<string*> fields = {
+            &app.applicationID, &app.fullName, &app.fatherName, &app.postalAddress,
+            &app.contactNumber, &app.email, &app.cnic, &app.cnicExpiryDate,
+            &app.employmentStatus, &app.maritalStatus, &app.gender, &app.numberOfDependents,
+            &app.annualIncome, &app.avgElectricityBill, &app.currentElectricityBill,
+            &app.loanPeriodStatus, &app.totalLoanAmount, &app.amountReturned,
+            &app.loanAmountDue, &app.bankName, &app.loanCategory,
+            &app.referee1Name, &app.referee1Cnic, &app.referee1IssueDate,
+            &app.referee1Phone, &app.referee1Email,
+            &app.referee2Name, &app.referee2Cnic, &app.referee2IssueDate,
+            &app.referee2Phone, &app.referee2Email,
+            &app.cnicFrontPath, &app.cnicBackPath, &app.electricityBillPath, &app.salarySlipPath,
+            &app.applicationStatus, &app.loanType, &app.selectedMake, &app.selectedArea,
+            &app.selectedHomeIndex, &app.selectedCarIndex, &app.selectedScooterIndex,
+            &app.selectedHomeDetails, &app.selectedCarDetails, &app.selectedScooterDetails
+        };
+
+        for (size_t i = 0; i < fields.size(); i++) {
+            if (getline(ss, token, '#')) {
+                *(fields[i]) = token;
+            }
+            else {
+                *(fields[i]) = "";
+            }
+        }
+        if (app.applicationID != applicationID) {
+            approvedApps.push_back(app);
+        }
+    }
+    file.close();
+
+    ofstream outFile("approved.txt");
+    if (!outFile.is_open()) {
+        cout << "Error: Could not write to approved.txt!\n";
+        return;
+    }
+
+    for (const auto& app : approvedApps) {
+        outFile << app.applicationID << "#"
+            << app.fullName << "#" << app.fatherName << "#" << app.postalAddress << "#"
+            << app.contactNumber << "#" << app.email << "#" << app.cnic << "#"
+            << app.cnicExpiryDate << "#" << app.employmentStatus << "#"
+            << app.maritalStatus << "#" << app.gender << "#"
+            << app.numberOfDependents << "#" << app.annualIncome << "#"
+            << app.avgElectricityBill << "#" << app.currentElectricityBill << "#"
+            << app.loanPeriodStatus << "#" << app.totalLoanAmount << "#"
+            << app.amountReturned << "#" << app.loanAmountDue << "#"
+            << app.bankName << "#" << app.loanCategory << "#"
+            << app.referee1Name << "#" << app.referee1Cnic << "#"
+            << app.referee1IssueDate << "#" << app.referee1Phone << "#"
+            << app.referee1Email << "#"
+            << app.referee2Name << "#" << app.referee2Cnic << "#"
+            << app.referee2IssueDate << "#" << app.referee2Phone << "#"
+            << app.referee2Email << "#"
+            << app.cnicFrontPath << "#" << app.cnicBackPath << "#"
+            << app.electricityBillPath << "#" << app.salarySlipPath << "#"
+            << app.applicationStatus << "#" << app.loanType << "#"
+            << app.selectedMake << "#" << app.selectedArea << "#"
+            << app.selectedHomeIndex << "#" << app.selectedCarIndex << "#"
+            << app.selectedScooterIndex << "#"
+            << app.selectedHomeDetails << "#" << app.selectedCarDetails << "#"
+            << app.selectedScooterDetails << "#\n";
+    }
+    outFile.close();
+}
+
 void displayApplicationPlain(const Application& app) {
     system("cls");
 
@@ -148,7 +266,6 @@ void displayApplicationPlain(const Application& app) {
     if (app.loanType == "home") {
         cout << "Selected Area: " << app.selectedArea << "\n";
         if (!app.selectedHomeDetails.empty()) {
-            // Parse and display home details
             stringstream ss(app.selectedHomeDetails);
             string item;
             while (getline(ss, item, ',')) {
@@ -167,7 +284,6 @@ void displayApplicationPlain(const Application& app) {
     else if (app.loanType == "car") {
         cout << "Selected Make: " << (app.selectedMake == "1" ? "Make 1" : "Make 2") << "\n";
         if (!app.selectedCarDetails.empty()) {
-            // Parse and display car details
             stringstream ss(app.selectedCarDetails);
             string item;
             while (getline(ss, item, ',')) {
@@ -186,7 +302,6 @@ void displayApplicationPlain(const Application& app) {
     else if (app.loanType == "scooter") {
         cout << "Selected Make: " << (app.selectedMake == "1" ? "Make 1" : "Make 2") << "\n";
         if (!app.selectedScooterDetails.empty()) {
-            // Parse and display scooter details
             stringstream ss(app.selectedScooterDetails);
             string item;
             while (getline(ss, item, ',')) {
@@ -243,27 +358,17 @@ void loginLender() {
         vector<Application> apps = loadApplications();
         if (apps.empty()) {
             cout << "\nNo applications found.\n";
-			exit(0);        
-		}
+            return;
+        }
 
-        vector<Application> pending;
+        cout << "\nAll Applications:\n";
+        cout << "=================\n";
         for (const auto& app : apps) {
-            if (app.applicationStatus == "submitted") {
-                pending.push_back(app);
-            }
-        }
-
-        if (pending.empty()) {
-            cout << "\nNo pending applications.\n";
-            exit(0);
-        }
-
-        cout << "\nPending Applications:\n";
-        for (const auto& app : pending) {
             cout << "ID: " << app.applicationID << "\n";
             cout << "Name: " << app.fullName << "\n";
             cout << "CNIC: " << app.cnic << "\n";
             cout << "Loan Type: " << app.loanType << "\n";
+            cout << "Status: " << app.applicationStatus << "\n";
             cout << "------------------------\n";
         }
 
@@ -274,36 +379,74 @@ void loginLender() {
 
         Application* selected = nullptr;
         for (auto& app : apps) {
-            if (app.applicationID == id && app.applicationStatus == "submitted") {
+            if (app.applicationID == id) {
                 selected = &app;
                 break;
             }
         }
 
         if (!selected) {
-            cout << "\nInvalid or already processed ID.\n";
+            cout << "\nInvalid Application ID.\n";
             continue;
         }
 
         displayApplicationPlain(*selected);
 
-        cout << "\n(A) Approve  (R) Reject  (C) Cancel: ";
+        string currentStatus = selected->applicationStatus;
+        cout << "\nCurrent Status: " << currentStatus << "\n";
+
+        if (currentStatus == "approved") {
+            cout << "\nThis application is already approved.\n";
+            cout << "You can only reject it now.\n";
+            cout << "(R) Reject  (C) Cancel: ";
+        }
+        else if (currentStatus == "rejected") {
+            cout << "\nThis application is already rejected.\n";
+            cout << "You can only approve it now.\n";
+            cout << "(A) Approve  (C) Cancel: ";
+        }
+        else {
+            cout << "\n(A) Approve  (R) Reject  (C) Cancel: ";
+        }
+
         string choice;
         cin >> choice;
 
         if (choice == "A" || choice == "a") {
-            selected->applicationStatus = "approved";
-            saveApplications(apps);
-            cout << "\nApplication " << id << " APPROVED.\n";
+            if (currentStatus == "approved") {
+                cout << "\nApplication is already approved. No changes made.\n";
+            }
+            else {
+                selected->applicationStatus = "approved";
+                saveApplications(apps);
+
+                addToApproved(*selected);
+
+                cout << "\nApplication " << id << " APPROVED.\n";
+            }
         }
         else if (choice == "R" || choice == "r") {
-            selected->applicationStatus = "rejected";
-            saveApplications(apps);
-            cout << "\nApplication " << id << " REJECTED.\n";
+            if (currentStatus == "rejected") {
+                cout << "\nApplication is already rejected. No changes made.\n";
+            }
+            else {
+                selected->applicationStatus = "rejected";
+                saveApplications(apps);
+
+                if (currentStatus == "approved") {
+                    removeFromApproved(id);
+                }
+
+                cout << "\nApplication " << id << " REJECTED.\n";
+            }
+        }
+        else {
+            cout << "\nOperation cancelled.\n";
         }
 
         cout << "\nPress Enter to continue...";
         cin.ignore();
         cin.get();
+        system("cls");
     }
 }
