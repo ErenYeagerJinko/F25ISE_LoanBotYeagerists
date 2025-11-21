@@ -547,9 +547,28 @@ private:
         return all_of(str.begin(), str.end(), ::isdigit);
     }
 
-    bool validateEmail(const string& str) {
-        return str.find('@') != string::npos;
-    }
+	bool validateEmail(const std::string& str) {
+		size_t atPos = str.find('@');
+		if (atPos == std::string::npos) {
+			return false; 
+		}
+		if (atPos == 0 || atPos == str.length() - 1) {
+			return false;
+		}
+
+		size_t dotPos = str.find('.', atPos);
+		if (dotPos == std::string::npos || dotPos == str.length() - 1) {
+			return false; 
+		}
+
+		if (dotPos == atPos + 1) {
+			return false;
+		}
+		if (dotPos == str.length() - 2) {
+			return false;
+		}
+		return true;
+	}
 
     bool validateContactNumber(const string& str) {
         return (str.size() == 11 && str[0] == '0') || (str.size() == 13 && str.substr(0, 3) == "+92");
@@ -559,24 +578,26 @@ private:
         return str.size() == 13 && validateNumeric(str);
     }
 
-    bool validateDate(const string& str) {
-        int day, month, year;
-        if (sscanf_s(str.c_str(), "%d-%d-%d", &day, &month, &year) == 3) {
-            if (month < 1 || month > 12) return false;
-            if (day < 1 || day > 31) return false;
-            if (month == 2) {
-                if (year % 4 == 0) {
-                    if (year % 100 == 0 && year % 400 != 0) return false;
-                    if (day > 29) return false;
-                } else {
-                    if (day > 28) return false;
-                }
-            }
-            if ((month == 4 || month == 6 || month == 9 || month == 11) && day > 30) return false;
-            return true;
-        }
-        return false;
-    }
+	bool validateDate(const std::string& str) {
+		int day, month, year;
+		if (sscanf_s(str.c_str(), "%d-%d-%d", &day, &month, &year) == 3) {
+			if (year < 2025 || year > 2100) return false;
+			if (month < 1 || month > 12) return false;
+			if (day < 1 || day > 31) return false;
+			if (month == 2) {
+				if (year % 4 == 0) {
+					if (year % 100 == 0 && year % 400 != 0) return false;
+					if (day > 29) return false;
+				}
+				else {
+					if (day > 28) return false;
+				}
+			}
+			if ((month == 4 || month == 6 || month == 9 || month == 11) && day > 30) return false;
+			return true;
+		}
+		return false;
+	}
 
     bool validateEmploymentStatus(const string& str) {
         return str == "self" || str == "salaried" || str == "retired" || str == "unemployed";
@@ -991,7 +1012,7 @@ LoanSeeker() {
             getline(cin, email);
             transform(email.begin(), email.end(), email.begin(), ::tolower);
             if (validateEmail(email)) break;
-            cout << "Invalid Email Address! Must contain @ symbol.\n";
+            cout << "Invalid Email Address! Example email: erenyeager@yeagerists.corps\n";
         }
     }
 
@@ -1009,7 +1030,7 @@ LoanSeeker() {
             cout << "Enter CNIC Expiry Date (DD-MM-YYYY): ";
             getline(cin, cnicExpiryDate);
             if (validateDate(cnicExpiryDate)) break;
-            cout << "Invalid date! Format must be DD-MM-YYYY with valid day/month/year values.\n";
+            cout << "Invalid date! Format must be DD-MM-YYYY with valid day/month/year values. Year must be greater than the current year.\n";
         }
     }
 
@@ -2168,3 +2189,4 @@ void startBot() {
 		}
 	}
 }
+
