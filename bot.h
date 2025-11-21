@@ -547,6 +547,8 @@ private:
         return all_of(str.begin(), str.end(), ::isdigit);
     }
 
+#include <string>
+
 	bool validateEmail(const std::string& str) {
 		size_t atPos = str.find('@');
 		if (atPos == std::string::npos) {
@@ -581,7 +583,7 @@ private:
 	bool validateDate(const std::string& str) {
 		int day, month, year;
 		if (sscanf_s(str.c_str(), "%d-%d-%d", &day, &month, &year) == 3) {
-			if (year < 2025 || year > 2100) return false;
+			if (year < 1900 || year > 2100) return false;
 			if (month < 1 || month > 12) return false;
 			if (day < 1 || day > 31) return false;
 			if (month == 2) {
@@ -1030,7 +1032,7 @@ LoanSeeker() {
             cout << "Enter CNIC Expiry Date (DD-MM-YYYY): ";
             getline(cin, cnicExpiryDate);
             if (validateDate(cnicExpiryDate)) break;
-            cout << "Invalid date! Format must be DD-MM-YYYY with valid day/month/year values. Year must be greater than the current year.\n";
+            cout << "Invalid date! Format must be DD-MM-YYYY with valid day/month/year values.\n";
         }
     }
 
@@ -2189,4 +2191,3 @@ void startBot() {
 		}
 	}
 }
-
