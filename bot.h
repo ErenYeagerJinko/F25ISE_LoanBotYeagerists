@@ -547,8 +547,6 @@ private:
         return all_of(str.begin(), str.end(), ::isdigit);
     }
 
-#include <string>
-
 	bool validateEmail(const std::string& str) {
 		size_t atPos = str.find('@');
 		if (atPos == std::string::npos) {
@@ -2191,3 +2189,4 @@ void startBot() {
 		}
 	}
 }
+
