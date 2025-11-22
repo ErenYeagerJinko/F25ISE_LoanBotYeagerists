@@ -1672,64 +1672,64 @@ void generateMonthlyPlan(const string& cnic) {
 			}
 		}
 
-if (fileCnic == cnic && status == "approved" &&
+			if (fileCnic == cnic && status == "approved" &&
 				!loanType.empty() && loanType != "0" && loanType != "default" &&
 				applicationsWithPlans.find(appID) == applicationsWithPlans.end()) {
 
-			foundApproved = true;
+				foundApproved = true;
 
-			int price = 0, downPayment = 0, installments = 0;
-			string description = "";
-			bool loanFound = false;
+				int price = 0, downPayment = 0, installments = 0;
+				string description = "";
+				bool loanFound = false;
 
-			if (loanType == "home" && selectedHomeIndex != -1) {
-				for (int i = 0; i < homeLoan.numberOfLines; i++) {
-					if (i == selectedHomeIndex) {
-						price = homeLoan.price[i];
-						downPayment = homeLoan.downPayment[i];
-						installments = homeLoan.installments[i];
-						description = "Home in Area " + to_string(homeLoan.area[i]) +
-							", Size: " + to_string(homeLoan.size[i]) + " Marla";
-						loanFound = true;
-						break;
+				if (loanType == "home" && selectedHomeIndex != -1) {
+					for (int i = 0; i < homeLoan.numberOfLines; i++) {
+						if (i == selectedHomeIndex) {
+							price = homeLoan.price[i];
+							downPayment = homeLoan.downPayment[i];
+							installments = homeLoan.installments[i];
+							description = "Home in Area " + to_string(homeLoan.area[i]) +
+								", Size: " + to_string(homeLoan.size[i]) + " Marla";
+							loanFound = true;
+							break;
+						}
 					}
 				}
-			}
-			else if (loanType == "car" && selectedCarIndex != -1) {
-				for (int i = 0; i < carLoan.numberOfLines; i++) {
-					if (i == selectedCarIndex) {
-						price = carLoan.price[i];
-						downPayment = carLoan.downPayment[i];
-						installments = carLoan.installments[i];
-						description = carLoan.make[i] + " " + carLoan.model[i] +
-							" (" + to_string(carLoan.year[i]) + ")";
-						loanFound = true;
-						break;
+				else if (loanType == "car" && selectedCarIndex != -1) {
+					for (int i = 0; i < carLoan.numberOfLines; i++) {
+						if (i == selectedCarIndex) {
+							price = carLoan.price[i];
+							downPayment = carLoan.downPayment[i];
+							installments = carLoan.installments[i];
+							description = carLoan.make[i] + " " + carLoan.model[i] +
+								" (" + to_string(carLoan.year[i]) + ")";
+							loanFound = true;
+							break;
+						}
 					}
 				}
-			}
-			else if (loanType == "scooter" && selectedScooterIndex != -1) {
-				for (int i = 0; i < scooterLoan.numberOfLines; i++) {
-					if (i == selectedScooterIndex) {
-						price = scooterLoan.price[i];
-						downPayment = scooterLoan.downPayment[i];
-						installments = scooterLoan.installments[i];
-						description = scooterLoan.make[i] + " " + scooterLoan.model[i] + " Scooter";
-						loanFound = true;
-						break;
+				else if (loanType == "scooter" && selectedScooterIndex != -1) {
+					for (int i = 0; i < scooterLoan.numberOfLines; i++) {
+						if (i == selectedScooterIndex) {
+							price = scooterLoan.price[i];
+							downPayment = scooterLoan.downPayment[i];
+							installments = scooterLoan.installments[i];
+							description = scooterLoan.make[i] + " " + scooterLoan.model[i] + " Scooter";
+							loanFound = true;
+							break;
+						}
 					}
 				}
-			}
 
-			if (!loanFound || price == 0) {
-				cout << "Error: Could not find matching loan data for application " << appID << ".\n";
-				cout << "Loan Type: " << loanType << ", Index: ";
-				if (loanType == "home") cout << selectedHomeIndex;
-				else if (loanType == "car") cout << selectedCarIndex;
-				else if (loanType == "scooter") cout << selectedScooterIndex;
-				cout << endl;
-				continue;
-			}
+				if (!loanFound || price == 0) {
+					cout << "Error: Could not find matching loan data for application " << appID << ".\n";
+					cout << "Loan Type: " << loanType << ", Index: ";
+					if (loanType == "home") cout << selectedHomeIndex;
+					else if (loanType == "car") cout << selectedCarIndex;
+					else if (loanType == "scooter") cout << selectedScooterIndex;
+					cout << endl;
+					continue;
+				}
 
 			cout << "\n====================================\n";
 			cout << "   GENERATING PAYMENT PLAN\n";
@@ -1886,7 +1886,7 @@ void displayAllLoanDetailsByCNIC(const string& cnic) {
 			if (paymentStatus == "active" && installments > 0) {
 				cout << "\nPayment Timeline:\n";
 				string months[] = { "January", "February", "March", "April", "May", "June",
-								  "July", "August", "September", "October", "November", "December" };
+									"July", "August", "September", "October", "November", "December" };
 
 				int completedInstallments = paidAmount / monthlyInstallment;
 				int currentMonth = startMonth - 1;
@@ -1959,8 +1959,8 @@ void startBot() {
 					int homes = homeLoan.displayHomes(stoi(area));
 					if (homes > 0) {
 						cout << "\nWould you like an installment plan? Y/n  ";
-cin >> input;
-							cin.ignore(numeric_limits<streamsize>::max(), '\n');
+						cin >> input;
+						cin.ignore(numeric_limits<streamsize>::max(), '\n');
 						if (input == "y" || input == "Y") {
 							homeLoan.generateInstallmentPlan(stoi(area));
 							showLoan = true;
@@ -1994,11 +1994,11 @@ cin >> input;
 				carLoan.displayCarsByMakeOption(opt);
 
 				cout << "\nWould you like an installment plan? Y/n  ";
-cin >> input;
-					cin.ignore(numeric_limits<streamsize>::max(), '\n');
-					if (input == "y" || input == "Y") {
-					carLoan.generateInstallmentPlanForOption(opt);
-					showLoan = true;
+				cin >> input;
+				cin.ignore(numeric_limits<streamsize>::max(), '\n');
+				if (input == "y" || input == "Y") {
+				carLoan.generateInstallmentPlanForOption(opt);
+				showLoan = true;
 				}
 			}
 			else {
@@ -2008,8 +2008,8 @@ cin >> input;
 
 		if (input == "B" || input == "b") {
 			string cnic;
-cin.ignore(numeric_limits<streamsize>::max(), '\n');
-				cout << "Enter CNIC (13 digits): ";
+			cin.ignore(numeric_limits<streamsize>::max(), '\n');
+			cout << "Enter CNIC (13 digits): ";
 			getline(cin, cnic);
 			if (all_of(cnic.begin(), cnic.end(), ::isdigit) && cnic.length() == 13) {
 				checkApplicationsByCNIC(cnic);
@@ -2022,8 +2022,8 @@ cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
 		if (input == "D" || input == "d") {
 			string cnic;
-cin.ignore(numeric_limits<streamsize>::max(), '\n');
-				cout << "Enter CNIC (13 digits): ";
+			cin.ignore(numeric_limits<streamsize>::max(), '\n');
+			cout << "Enter CNIC (13 digits): ";
 			getline(cin, cnic);
 			if (all_of(cnic.begin(), cnic.end(), ::isdigit) && cnic.length() == 13) {
 				generateMonthlyPlan(cnic);
@@ -2036,8 +2036,8 @@ cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
 		if (input == "E" || input == "e") {
 			string cnic;
-cin.ignore(numeric_limits<streamsize>::max(), '\n');
-				cout << "Enter CNIC (13 digits): ";
+			cin.ignore(numeric_limits<streamsize>::max(), '\n');
+			cout << "Enter CNIC (13 digits): ";
 			getline(cin, cnic);
 			if (all_of(cnic.begin(), cnic.end(), ::isdigit) && cnic.length() == 13) {
 				displayAllLoanDetailsByCNIC(cnic);
