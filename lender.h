@@ -23,12 +23,6 @@ struct Application {
     string annualIncome;
     string avgElectricityBill;
     string currentElectricityBill;
-    string loanPeriodStatus;
-    string totalLoanAmount;
-    string amountReturned;
-    string loanAmountDue;
-    string bankName;
-    string loanCategory;
     string referee1Name, referee1Cnic, referee1IssueDate, referee1Phone, referee1Email;
     string referee2Name, referee2Cnic, referee2IssueDate, referee2Phone, referee2Email;
     string cnicFrontPath, cnicBackPath, electricityBillPath, salarySlipPath;
@@ -64,8 +58,6 @@ vector<Application> loadApplications() {
             &app.contactNumber, &app.email, &app.cnic, &app.cnicExpiryDate,
             &app.employmentStatus, &app.maritalStatus, &app.gender, &app.numberOfDependents,
             &app.annualIncome, &app.avgElectricityBill, &app.currentElectricityBill,
-            &app.loanPeriodStatus, &app.totalLoanAmount, &app.amountReturned,
-            &app.loanAmountDue, &app.bankName, &app.loanCategory,
             &app.referee1Name, &app.referee1Cnic, &app.referee1IssueDate,
             &app.referee1Phone, &app.referee1Email,
             &app.referee2Name, &app.referee2Cnic, &app.referee2IssueDate,
@@ -88,159 +80,6 @@ vector<Application> loadApplications() {
     }
     file.close();
     return apps;
-}
-
-void saveApplications(const vector<Application>& apps) {
-    ofstream file("applications.txt");
-    if (!file.is_open()) {
-        cout << "Error: Could not write to applications.txt!\n";
-        return;
-    }
-
-    for (const auto& app : apps) {
-        file << app.applicationID << "#"
-            << app.fullName << "#" << app.fatherName << "#" << app.postalAddress << "#"
-            << app.contactNumber << "#" << app.email << "#" << app.cnic << "#"
-            << app.cnicExpiryDate << "#" << app.employmentStatus << "#"
-            << app.maritalStatus << "#" << app.gender << "#"
-            << app.numberOfDependents << "#" << app.annualIncome << "#"
-            << app.avgElectricityBill << "#" << app.currentElectricityBill << "#"
-            << app.loanPeriodStatus << "#" << app.totalLoanAmount << "#"
-            << app.amountReturned << "#" << app.loanAmountDue << "#"
-            << app.bankName << "#" << app.loanCategory << "#"
-            << app.referee1Name << "#" << app.referee1Cnic << "#"
-            << app.referee1IssueDate << "#" << app.referee1Phone << "#"
-            << app.referee1Email << "#"
-            << app.referee2Name << "#" << app.referee2Cnic << "#"
-            << app.referee2IssueDate << "#" << app.referee2Phone << "#"
-            << app.referee2Email << "#"
-            << app.cnicFrontPath << "#" << app.cnicBackPath << "#"
-            << app.electricityBillPath << "#" << app.salarySlipPath << "#"
-            << app.applicationStatus << "#" << app.loanType << "#"
-            << app.selectedMake << "#" << app.selectedArea << "#"
-            << app.selectedHomeIndex << "#" << app.selectedCarIndex << "#"
-            << app.selectedScooterIndex << "#"
-            << app.selectedHomeDetails << "#" << app.selectedCarDetails << "#"
-            << app.selectedScooterDetails << "#\n";
-    }
-    file.close();
-}
-
-void addToApproved(const Application& app) {
-    ofstream file("approved.txt", ios::app);
-    if (!file.is_open()) {
-        cout << "Error: Could not write to approved.txt!\n";
-        return;
-    }
-
-    file << app.applicationID << "#"
-        << app.fullName << "#" << app.fatherName << "#" << app.postalAddress << "#"
-        << app.contactNumber << "#" << app.email << "#" << app.cnic << "#"
-        << app.cnicExpiryDate << "#" << app.employmentStatus << "#"
-        << app.maritalStatus << "#" << app.gender << "#"
-        << app.numberOfDependents << "#" << app.annualIncome << "#"
-        << app.avgElectricityBill << "#" << app.currentElectricityBill << "#"
-        << app.loanPeriodStatus << "#" << app.totalLoanAmount << "#"
-        << app.amountReturned << "#" << app.loanAmountDue << "#"
-        << app.bankName << "#" << app.loanCategory << "#"
-        << app.referee1Name << "#" << app.referee1Cnic << "#"
-        << app.referee1IssueDate << "#" << app.referee1Phone << "#"
-        << app.referee1Email << "#"
-        << app.referee2Name << "#" << app.referee2Cnic << "#"
-        << app.referee2IssueDate << "#" << app.referee2Phone << "#"
-        << app.referee2Email << "#"
-        << app.cnicFrontPath << "#" << app.cnicBackPath << "#"
-        << app.electricityBillPath << "#" << app.salarySlipPath << "#"
-        << "approved" << "#" << app.loanType << "#"
-        << app.selectedMake << "#" << app.selectedArea << "#"
-        << app.selectedHomeIndex << "#" << app.selectedCarIndex << "#"
-        << app.selectedScooterIndex << "#"
-        << app.selectedHomeDetails << "#" << app.selectedCarDetails << "#"
-        << app.selectedScooterDetails << "#\n";
-
-    file.close();
-    cout << "Application added to approved.txt\n";
-}
-
-void removeFromApproved(const string& applicationID) {
-    vector<Application> approvedApps;
-    ifstream file("approved.txt");
-    if (!file.is_open()) {
-        cout << "Error: approved.txt not found.\n";
-        return;
-    }
-
-    string line;
-    while (getline(file, line)) {
-        if (line.empty()) continue;
-        stringstream ss(line);
-        Application app;
-        string token;
-
-        vector<string*> fields = {
-            &app.applicationID, &app.fullName, &app.fatherName, &app.postalAddress,
-            &app.contactNumber, &app.email, &app.cnic, &app.cnicExpiryDate,
-            &app.employmentStatus, &app.maritalStatus, &app.gender, &app.numberOfDependents,
-            &app.annualIncome, &app.avgElectricityBill, &app.currentElectricityBill,
-            &app.loanPeriodStatus, &app.totalLoanAmount, &app.amountReturned,
-            &app.loanAmountDue, &app.bankName, &app.loanCategory,
-            &app.referee1Name, &app.referee1Cnic, &app.referee1IssueDate,
-            &app.referee1Phone, &app.referee1Email,
-            &app.referee2Name, &app.referee2Cnic, &app.referee2IssueDate,
-            &app.referee2Phone, &app.referee2Email,
-            &app.cnicFrontPath, &app.cnicBackPath, &app.electricityBillPath, &app.salarySlipPath,
-            &app.applicationStatus, &app.loanType, &app.selectedMake, &app.selectedArea,
-            &app.selectedHomeIndex, &app.selectedCarIndex, &app.selectedScooterIndex,
-            &app.selectedHomeDetails, &app.selectedCarDetails, &app.selectedScooterDetails
-        };
-
-        for (size_t i = 0; i < fields.size(); i++) {
-            if (getline(ss, token, '#')) {
-                *(fields[i]) = token;
-            }
-            else {
-                *(fields[i]) = "";
-            }
-        }
-        if (app.applicationID != applicationID) {
-            approvedApps.push_back(app);
-        }
-    }
-    file.close();
-
-    ofstream outFile("approved.txt");
-    if (!outFile.is_open()) {
-        cout << "Error: Could not write to approved.txt!\n";
-        return;
-    }
-
-    for (const auto& app : approvedApps) {
-        outFile << app.applicationID << "#"
-            << app.fullName << "#" << app.fatherName << "#" << app.postalAddress << "#"
-            << app.contactNumber << "#" << app.email << "#" << app.cnic << "#"
-            << app.cnicExpiryDate << "#" << app.employmentStatus << "#"
-            << app.maritalStatus << "#" << app.gender << "#"
-            << app.numberOfDependents << "#" << app.annualIncome << "#"
-            << app.avgElectricityBill << "#" << app.currentElectricityBill << "#"
-            << app.loanPeriodStatus << "#" << app.totalLoanAmount << "#"
-            << app.amountReturned << "#" << app.loanAmountDue << "#"
-            << app.bankName << "#" << app.loanCategory << "#"
-            << app.referee1Name << "#" << app.referee1Cnic << "#"
-            << app.referee1IssueDate << "#" << app.referee1Phone << "#"
-            << app.referee1Email << "#"
-            << app.referee2Name << "#" << app.referee2Cnic << "#"
-            << app.referee2IssueDate << "#" << app.referee2Phone << "#"
-            << app.referee2Email << "#"
-            << app.cnicFrontPath << "#" << app.cnicBackPath << "#"
-            << app.electricityBillPath << "#" << app.salarySlipPath << "#"
-            << app.applicationStatus << "#" << app.loanType << "#"
-            << app.selectedMake << "#" << app.selectedArea << "#"
-            << app.selectedHomeIndex << "#" << app.selectedCarIndex << "#"
-            << app.selectedScooterIndex << "#"
-            << app.selectedHomeDetails << "#" << app.selectedCarDetails << "#"
-            << app.selectedScooterDetails << "#\n";
-    }
-    outFile.close();
 }
 
 void displayApplicationPlain(const Application& app) {
@@ -300,7 +139,7 @@ void displayApplicationPlain(const Application& app) {
         }
     }
     else if (app.loanType == "scooter") {
-        cout << "Selected Make: " << (app.selectedMake == "1" ? "Make 1" : "Make 2") << "\n";
+        cout << "Selected Make: " << "Make 1" << "\n";
         if (!app.selectedScooterDetails.empty()) {
             stringstream ss(app.selectedScooterDetails);
             string item;
@@ -316,19 +155,6 @@ void displayApplicationPlain(const Application& app) {
         else {
             cout << "Scooter Details: N/A\n";
         }
-    }
-
-    if (app.loanPeriodStatus != "N/A") {
-        cout << "\nExisting Loan: Yes\n";
-        cout << "Loan Status: " << app.loanPeriodStatus << "\n";
-        cout << "Bank: " << app.bankName << "\n";
-        cout << "Loan Category: " << app.loanCategory << "\n";
-        cout << "Total Amount: " << app.totalLoanAmount << " PKR\n";
-        cout << "Amount Returned: " << app.amountReturned << " PKR\n";
-        cout << "Amount Due: " << app.loanAmountDue << " PKR\n";
-    }
-    else {
-        cout << "\nExisting Loan: None\n";
     }
 
     cout << "\nReferee 1 Name: " << app.referee1Name << "\n";
@@ -348,6 +174,54 @@ void displayApplicationPlain(const Application& app) {
 
     cout << "\nStatus: " << app.applicationStatus << "\n";
     cout << "\n====================================\n";
+}
+
+void updateApplicationStatus(const string& appID, const string& newStatus) {
+    vector<Application> apps = loadApplications();
+    bool found = false;
+
+    for (auto& app : apps) {
+        if (app.applicationID == appID) {
+            app.applicationStatus = newStatus;
+            found = true;
+            break;
+        }
+    }
+
+    if (!found) {
+        cout << "Application with ID " << appID << " not found.\n";
+        return;
+    }
+
+    ofstream file("applications.txt");
+    if (!file.is_open()) {
+        cout << "Error: Could not open file to write.\n";
+        return;
+    }
+
+    for (const auto& app : apps) {
+        vector<string> fields = {
+            app.applicationID, app.fullName, app.fatherName, app.postalAddress, app.contactNumber,
+            app.email, app.cnic, app.cnicExpiryDate, app.employmentStatus, app.maritalStatus, app.gender,
+            app.numberOfDependents, app.annualIncome, app.avgElectricityBill, app.currentElectricityBill,
+            app.referee1Name, app.referee1Cnic, app.referee1IssueDate, app.referee1Phone, app.referee1Email,
+            app.referee2Name, app.referee2Cnic, app.referee2IssueDate, app.referee2Phone, app.referee2Email,
+            app.cnicFrontPath, app.cnicBackPath, app.electricityBillPath, app.salarySlipPath,
+            app.applicationStatus, app.loanType, app.selectedMake, app.selectedArea, app.selectedHomeIndex,
+            app.selectedCarIndex, app.selectedScooterIndex, app.selectedHomeDetails, app.selectedCarDetails,
+            app.selectedScooterDetails
+        };
+
+        for (size_t i = 0; i < fields.size(); i++) {
+            file << fields[i];
+            if (i < fields.size() - 1) {
+                file << "#";
+            }
+        }
+        file << "\n";
+    }
+    file.close();
+    cout << "Application status updated successfully.\n";
 }
 
 void loginLender() {
@@ -418,10 +292,7 @@ void loginLender() {
             }
             else {
                 selected->applicationStatus = "approved";
-                saveApplications(apps);
-
-                addToApproved(*selected);
-
+                updateApplicationStatus(id, "approved");
                 cout << "\nApplication " << id << " APPROVED.\n";
             }
         }
@@ -431,10 +302,8 @@ void loginLender() {
             }
             else {
                 selected->applicationStatus = "rejected";
-                saveApplications(apps);
-
                 if (currentStatus == "approved") {
-                    removeFromApproved(id);
+                    updateApplicationStatus(id, "rejected");
                 }
 
                 cout << "\nApplication " << id << " REJECTED.\n";
