@@ -1,0 +1,3 @@
+Category#Installments#Amount#Down Payment
+Medical#24#1,000,000#200,000
+Educational#36#2,000,000#400,000
