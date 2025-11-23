@@ -30,6 +30,18 @@ int numberOfLinesInFile(string fileName) {
 	return numberOfLines;
 }
 
+string trim(string& str) {
+	auto start = find_if_not(str.begin(), str.end(), [](unsigned char ch) {
+		return isspace(ch);
+		});
+
+	auto end = find_if_not(str.rbegin(), str.rend(), [](unsigned char ch) {
+		return isspace(ch);
+		}).base();
+
+	return (start < end) ? string(start, end) : "";
+}
+
 class Responder {
 public:
 	string* userInput, * systemResponse;
@@ -89,6 +101,106 @@ public:
 			respondToUser("*");
 		}
 		return;
+	}
+};
+
+class Conversation {
+public:
+	string* userInput, * systemResponse;
+	int numberOfLines;
+
+	Conversation() {
+		numberOfLines = numberOfLinesInFile("human_chat_corpus.txt") / 2;
+		userInput = new string[numberOfLines];
+		systemResponse = new string[numberOfLines];
+		for (int i = 0; i < numberOfLines; i++) {
+			userInput[i] = systemResponse[i] = "";
+		}
+	}
+
+	~Conversation() {
+		delete[] userInput;
+		delete[] systemResponse;
+		userInput = systemResponse = nullptr;
+	}
+
+	void loadConversationFromFile(const string& filename) {
+		ifstream file(filename);
+
+		if (!file.is_open()) {
+			cout << "Error opening file: " << filename << endl;
+			return;
+		}
+
+		int lineIndex = 0;
+		string line;
+		bool isUserInput = true;
+
+		while (getline(file, line)) {
+			size_t colonPos = line.find(':');
+			if (colonPos != string::npos) {
+				string trimmedLine = line.substr(colonPos + 2);
+
+				if (isUserInput) {
+					transform(trimmedLine.begin(), trimmedLine.end(), trimmedLine.begin(), ::tolower);
+					if (lineIndex < numberOfLines) {
+						userInput[lineIndex] = trimmedLine;
+					}
+				}
+				else {
+					if (lineIndex < numberOfLines) {
+						systemResponse[lineIndex] = trimmedLine;
+					}
+					lineIndex++;
+				}
+			}
+			isUserInput = !isUserInput;
+		}
+
+		file.close();
+	}
+
+	vector<string> tokenize(const string& str) {
+		vector<string> tokens;
+		stringstream ss(str);
+		string token;
+		while (ss >> token) {
+			tokens.push_back(token);
+		}
+		return tokens;
+	}
+
+	double calculateIoU(const vector<string>& userTokens, const vector<string>& responseTokens) {
+		set<string> userSet(userTokens.begin(), userTokens.end());
+		set<string> responseSet(responseTokens.begin(), responseTokens.end());
+
+		set<string> intersection;
+		set_intersection(userSet.begin(), userSet.end(), responseSet.begin(), responseSet.end(),
+			inserter(intersection, intersection.begin()));
+
+		set<string> unionSet;
+		set_union(userSet.begin(), userSet.end(), responseSet.begin(), responseSet.end(),
+			inserter(unionSet, unionSet.begin()));
+
+		return static_cast<double>(intersection.size()) / unionSet.size();
+	}
+
+	string getBestResponse(const string& userInputText) {
+		vector<string> userTokens = tokenize(userInputText);
+		double bestIoU = 0.0;
+		string bestResponse = "";
+
+		for (int i = 0; i < numberOfLines; i++) {
+			vector<string> responseTokens = tokenize(systemResponse[i]);
+			double currentIoU = calculateIoU(userTokens, responseTokens);
+
+			if (currentIoU > bestIoU) {
+				bestIoU = currentIoU;
+				bestResponse = systemResponse[i];
+			}
+		}
+
+		return bestResponse;
 	}
 };
 
@@ -782,6 +894,7 @@ private:
 			cout << "\nSelect area (1-4): ";
 			string areaInput;
 			getline(cin, areaInput);
+			areaInput = trim(areaInput);
 			if (validateArea(areaInput)) {
 				selectedArea = stoi(areaInput);
 				break;
@@ -817,6 +930,7 @@ private:
 			cout << "\nSelect a home (1-" << availableHomes << "): ";
 			string choiceInput;
 			getline(cin, choiceInput);
+			choiceInput = trim(choiceInput);
 			if (validateChoice(choiceInput, availableHomes)) {
 				int choice = stoi(choiceInput);
 				selectedHomeIndex = homeIndices[choice - 1];
@@ -846,6 +960,7 @@ private:
 			cout << "2. Make 2\n";
 			cout << "Enter choice (1-2): ";
 			getline(cin, selectedMake);
+			selectedMake = trim(selectedMake);
 			if (validateMake(selectedMake)) break;
 			cout << "Invalid make! Please enter 1 or 2.\n";
 		}
@@ -881,6 +996,7 @@ private:
 			cout << "\nSelect a car (1-" << availableCars << "): ";
 			string choiceInput;
 			getline(cin, choiceInput);
+			choiceInput = trim(choiceInput);
 			if (validateChoice(choiceInput, availableCars)) {
 				int choice = stoi(choiceInput);
 				selectedCarIndex = carIndices[choice - 1];
@@ -933,6 +1049,7 @@ private:
 			cout << "\nSelect a scooter (1-" << availableScooters << "): ";
 			string choiceInput;
 			getline(cin, choiceInput);
+			choiceInput = trim(choiceInput);
 			if (validateChoice(choiceInput, availableScooters)) {
 				int choice = stoi(choiceInput);
 				selectedScooterIndex = choice - 1;
@@ -967,6 +1084,7 @@ private:
 			cout << "\nSelect a loan (1-" << personalLoan.numberOfLines << "): ";
 			string choiceInput;
 			getline(cin, choiceInput);
+			choiceInput = trim(choiceInput);
 			if (validateChoice(choiceInput, personalLoan.numberOfLines)) {
 				int choice = stoi(choiceInput);
 				selectedPersonalIndex = choice - 1;
@@ -1089,6 +1207,7 @@ LoanSeeker() {
         while (true) {
             cout << "Enter Full Name: ";
             getline(cin, fullName);
+			fullName = trim(fullName);
             if (validateAlphabetString(fullName)) {
                 capitalizeWords(fullName);
                 break;
@@ -1102,6 +1221,7 @@ LoanSeeker() {
         while (true) {
             cout << "Enter Father's Name: ";
             getline(cin, fatherName);
+			fatherName = trim(fatherName);
             if (validateAlphabetString(fatherName)) {
                 capitalizeWords(fatherName);
                 break;
@@ -1114,6 +1234,7 @@ LoanSeeker() {
     void inputPostalAddress() {
         cout << "Enter Postal Address: ";
         getline(cin, postalAddress);
+		postalAddress = trim(postalAddress);
         capitalizeWords(postalAddress);
     }
 
@@ -1121,6 +1242,7 @@ LoanSeeker() {
         while (true) {
             cout << "Enter Contact Number (11 or 13 digits): ";
             getline(cin, contactNumber);
+			contactNumber = trim(contactNumber);
             if (validateContactNumber(contactNumber)) break;
             cout << "Invalid Contact Number! Must be 11 digits starting with 0 or 13 digits starting with +92.\n";
         }
@@ -1130,6 +1252,7 @@ LoanSeeker() {
         while (true) {
             cout << "Enter Email Address: ";
             getline(cin, email);
+			email = trim(email);
             transform(email.begin(), email.end(), email.begin(), ::tolower);
             if (validateEmail(email)) break;
             cout << "Invalid Email Address! Example email: erenyeager@yeagerists.corps\n";
@@ -1140,6 +1263,7 @@ LoanSeeker() {
         while (true) {
             cout << "Enter CNIC (13 digits, no dashes): ";
             getline(cin, cnic);
+			cnic = trim(cnic);
             if (validateCnic(cnic)) break;
             cout << "Invalid CNIC! Must be exactly 13 digits.\n";
         }
@@ -1149,6 +1273,7 @@ LoanSeeker() {
         while (true) {
             cout << "Enter CNIC Expiry Date (DD-MM-YYYY): ";
             getline(cin, cnicExpiryDate);
+			cnicExpiryDate = trim(cnicExpiryDate);
             if (validateDate(cnicExpiryDate)) break;
             cout << "Invalid date! Format must be DD-MM-YYYY with valid day/month/year values.\n";
         }
@@ -1158,6 +1283,7 @@ LoanSeeker() {
         while (true) {
             cout << "Enter Employment Status (self, salaried, retired, unemployed): ";
             getline(cin, employmentStatus);
+			employmentStatus = trim(employmentStatus);
             transform(employmentStatus.begin(), employmentStatus.end(), employmentStatus.begin(), ::tolower);
             if (validateEmploymentStatus(employmentStatus)) break;
             cout << "Invalid Employment Status!\n";
@@ -1168,6 +1294,7 @@ LoanSeeker() {
         while (true) {
             cout << "Enter Marital Status (widowed, single, married, divorced): ";
             getline(cin, maritalStatus);
+			maritalStatus = trim(maritalStatus);
             transform(maritalStatus.begin(), maritalStatus.end(), maritalStatus.begin(), ::tolower);
             if (validateMaritalStatus(maritalStatus)) break;
             cout << "Invalid Marital Status!\n";
@@ -1178,6 +1305,7 @@ LoanSeeker() {
         while (true) {
             cout << "Enter Gender (male, female, other): ";
             getline(cin, gender);
+			gender = trim(gender);
             transform(gender.begin(), gender.end(), gender.begin(), ::tolower);
             if (validateGender(gender)) break;
             cout << "Invalid Gender!\n";
@@ -1189,6 +1317,7 @@ LoanSeeker() {
         while (true) {
             cout << "Enter Number of Dependents: ";
             getline(cin, input);
+			input = trim(input);
             if (validateNumeric(input)) {
                 numberOfDependents = stoi(input);
                 break;
@@ -1203,6 +1332,7 @@ LoanSeeker() {
             cout << "Enter Annual Income (no commas): ";
             string input;
             getline(cin, input);
+			input = trim(input);
             if (validateNumeric(input)) {
                 annualIncome = stof(input);
                 break;
@@ -1217,6 +1347,7 @@ LoanSeeker() {
             cout << "Enter Average Electricity Bill (no commas): ";
             string input;
             getline(cin, input);
+			input = trim(input);
             if (validateNumeric(input)) {
                 avgElectricityBill = stof(input);
                 break;
@@ -1231,6 +1362,7 @@ LoanSeeker() {
             cout << "Enter Current Electricity Bill (exact): ";
             string input;
             getline(cin, input);
+			input = trim(input);
             if (validateNumeric(input)) {
                 currentElectricityBill = stof(input);
                 break;
@@ -1248,6 +1380,7 @@ LoanSeeker() {
 		while (true) {
 			cout << "Enter Name of Referee 1: ";
 			getline(cin, referee1.name);
+			referee1.name = trim(referee1.name);
 			if (validateAlphabetString(referee1.name)) {
 				capitalizeWords(referee1.name);
 				break;
@@ -1258,6 +1391,7 @@ LoanSeeker() {
 		while (true) {
 			cout << "Enter CNIC of Referee 1 (13 digits, no dashes): ";
 			getline(cin, referee1.cnic);
+			trim(referee1.cnic);
 			if (validateCnic(referee1.cnic)) break;
 			cout << "Invalid CNIC! Must be exactly 13 digits.\n";
 		}
@@ -1265,6 +1399,7 @@ LoanSeeker() {
 		while (true) {
 			cout << "Enter CNIC Issue Date of Referee 1 (DD-MM-YYYY): ";
 			getline(cin, referee1.cnicIssueDate);
+			referee1.cnicIssueDate = trim(referee1.cnicIssueDate);
 			if (validateDate(referee1.cnicIssueDate)) break;
 			cout << "Invalid date! Format must be DD-MM-YYYY with valid day/month/year values.\n";
 		}
@@ -1272,6 +1407,7 @@ LoanSeeker() {
 		while (true) {
 			cout << "Enter Phone Number of Referee 1 (11 or 13 digits): ";
 			getline(cin, referee1.phoneNumber);
+			referee1.phoneNumber = trim(referee1.phoneNumber);
 			if (validateContactNumber(referee1.phoneNumber)) break;
 			cout << "Invalid Phone Number! Must be 11 digits starting with 0 or 13 digits starting with +92.\n";
 		}
@@ -1279,9 +1415,10 @@ LoanSeeker() {
 		while (true) {
 			cout << "Enter Email Address of Referee 1: ";
 			getline(cin, referee1.emailAddress);
+			referee1.emailAddress = trim(referee1.emailAddress);
 			toLowerCase(referee1.emailAddress);
 			if (validateEmail(referee1.emailAddress)) break;
-			cout << "Invalid Email Address! Must contain @ symbol.\n";
+			cout << "Invalid Email Address! Example email: erenyeager@yeagerists.corps\n";
 		}
 
 		cout << "\n--- Referee 2 Information ---\n";
@@ -1289,6 +1426,7 @@ LoanSeeker() {
 		while (true) {
 			cout << "Enter Name of Referee 2: ";
 			getline(cin, referee2.name);
+			referee2.name = trim(referee2.name);
 			if (validateAlphabetString(referee2.name)) {
 				capitalizeWords(referee2.name);
 				break;
@@ -1299,6 +1437,7 @@ LoanSeeker() {
 		while (true) {
 			cout << "Enter CNIC of Referee 2 (13 digits, no dashes): ";
 			getline(cin, referee2.cnic);
+			referee2.cnic = trim(referee2.cnic);
 			if (validateCnic(referee2.cnic)) break;
 			cout << "Invalid CNIC! Must be exactly 13 digits.\n";
 		}
@@ -1306,6 +1445,7 @@ LoanSeeker() {
 		while (true) {
 			cout << "Enter CNIC Issue Date of Referee 2 (DD-MM-YYYY): ";
 			getline(cin, referee2.cnicIssueDate);
+			referee2.cnicIssueDate = trim(referee2.cnicIssueDate);
 			if (validateDate(referee2.cnicIssueDate)) break;
 			cout << "Invalid date! Format must be DD-MM-YYYY with valid day/month/year values.\n";
 		}
@@ -1313,6 +1453,7 @@ LoanSeeker() {
 		while (true) {
 			cout << "Enter Phone Number of Referee 2 (11 or 13 digits): ";
 			getline(cin, referee2.phoneNumber);
+			referee2.phoneNumber = trim(referee2.phoneNumber);
 			if (validateContactNumber(referee2.phoneNumber)) break;
 			cout << "Invalid Phone Number! Must be 11 digits starting with 0 or 13 digits starting with +92.\n";
 		}
@@ -1320,9 +1461,10 @@ LoanSeeker() {
 		while (true) {
 			cout << "Enter Email Address of Referee 2: ";
 			getline(cin, referee2.emailAddress);
+			referee2.phoneNumber = trim(referee2.phoneNumber);
 			toLowerCase(referee2.emailAddress);
 			if (validateEmail(referee2.emailAddress)) break;
-			cout << "Invalid Email Address! Must contain @ symbol.\n";
+			cout << "Invalid Email Address! Example email: erenyeager@yeagerists.corps\n";
 		}
 	}
 
@@ -1349,6 +1491,7 @@ LoanSeeker() {
 		while (true) {
 			cout << "Enter file path for CNIC Front (e.g. C:/docs/cnic_front.jpg): ";
 			getline(cin, sourcePath);
+			sourcePath = trim(sourcePath);
 
 			if (!verifyImageFileExistence(sourcePath)) {
 				cout << "File does not exist. Try again.\n";
@@ -1370,6 +1513,7 @@ LoanSeeker() {
 		while (true) {
 			cout << "Enter file path for CNIC Back: ";
 			getline(cin, sourcePath);
+			sourcePath = trim(sourcePath);
 
 			if (!verifyImageFileExistence(sourcePath)) {
 				cout << "File does not exist. Try again.\n";
@@ -1391,6 +1535,7 @@ LoanSeeker() {
 		while (true) {
 			cout << "Enter file path for Recent Electricity Bill: ";
 			getline(cin, sourcePath);
+			sourcePath = trim(sourcePath);
 
 			if (!verifyImageFileExistence(sourcePath)) {
 				cout << "File does not exist. Try again.\n";
@@ -1412,6 +1557,7 @@ LoanSeeker() {
 		while (true) {
 			cout << "Enter file path for Salary Slip/Bank Statement: ";
 			getline(cin, sourcePath);
+			sourcePath = trim(sourcePath);
 
 			if (!verifyImageFileExistence(sourcePath)) {
 				cout << "File does not exist. Try again.\n";
@@ -1439,6 +1585,7 @@ LoanSeeker() {
 		while (true) {
 			cout << "Select loan type (home/car/scooter/personal): ";
 			getline(cin, loanType);
+			loanType = trim(loanType);
 			transform(loanType.begin(), loanType.end(), loanType.begin(), ::tolower);
 			if (validateLoanType(loanType)) break;
 			cout << "Invalid loan type! Please enter 'home', 'car', 'scooter' or 'personal'.\n";
@@ -1593,6 +1740,7 @@ LoanSeeker() {
 			cout << "\nDo you want to submit this application? (yes/no): ";
 			getline(cin, response);
 			toLowerCase(response);
+			response = trim(response);
 			if (validateYesNo(response)) {
 				return (response == "yes" || response == "y");
 			}
@@ -1703,71 +1851,6 @@ void checkApplicationsByCNIC(const string& cnic) {
 	cout << "Approved Applications: " << approved << endl;
 	cout << "Rejected Applications: " << rejected << endl;
 	cout << "Total Applications: " << (submitted + approved + rejected) << endl;
-	if (approved > 0) {
-		cout << "\n--- APPROVED APPLICATION DETAILS ---\n";
-
-		ifstream approvedFile("approved.txt");
-		if (approvedFile) {
-			bool foundPaymentPlans = false;
-
-			while (getline(approvedFile, line)) {
-				stringstream ss(line);
-				string token;
-				int fieldCount = 0;
-				string approvedAppID, approvedCNIC, loanType, description;
-				int price, downPayment, installments, monthlyInstallment, totalAmount, startMonth;
-				string paymentStatus;
-				int remainingAmount, paidAmount;
-
-				while (getline(ss, token, '#')) {
-					fieldCount++;
-					switch (fieldCount) {
-					case 1: approvedAppID = token; break;
-					case 2: approvedCNIC = token; break;
-					case 3: loanType = token; break;
-					case 4: description = token; break;
-					case 5: price = stoi(token); break;
-					case 6: downPayment = stoi(token); break;
-					case 7: installments = stoi(token); break;
-					case 8: monthlyInstallment = stoi(token); break;
-					case 9: totalAmount = stoi(token); break;
-					case 10: startMonth = stoi(token); break;
-					case 11: paymentStatus = token; break;
-					case 12: remainingAmount = stoi(token); break;
-					case 13: paidAmount = stoi(token); break;
-					}
-				}
-
-				if (approvedCNIC == cnic) {
-					foundPaymentPlans = true;
-					cout << "\nApplication ID: " << approvedAppID << endl;
-					cout << "Loan Type: " << loanType << endl;
-					cout << "Description: " << description << endl;
-					cout << "Total Price: " << price << endl;
-					cout << "Down Payment: " << downPayment << endl;
-					cout << "Monthly Installment: " << monthlyInstallment << endl;
-					cout << "Total Loan Amount: " << totalAmount << endl;
-					cout << "Installment Period: " << installments << " months" << endl;
-					cout << "Starting Month: " << startMonth << endl;
-					cout << "Payment Status: " << paymentStatus << endl;
-					cout << "Amount Paid: " << paidAmount << endl;
-					cout << "Remaining Amount: " << remainingAmount << endl;
-
-					double progress = (totalAmount > 0) ? ((double)paidAmount / totalAmount) * 100 : 0;
-					cout << "Payment Progress: " << progress << "%" << endl;
-					cout << "------------------------" << endl;
-				}
-			}
-			approvedFile.close();
-
-			if (!foundPaymentPlans) {
-				cout << "No payment plans generated for approved applications.\n";
-			}
-		}
-		else {
-			cout << "No payment plans found for approved applications.\n";
-		}
-	}
 	cout << "====================================\n\n";
 }
 
@@ -1926,6 +2009,7 @@ void generateMonthlyPlan(const string& cnic) {
 				cout << "Enter starting month (1-12): ";
 				string input;
 				getline(cin, input);
+				input = trim(input);
 				if (all_of(input.begin(), input.end(), ::isdigit)) {
 					startMonth = stoi(input);
 					if (startMonth >= 1 && startMonth <= 12) break;
@@ -2196,6 +2280,7 @@ void startBot() {
 			cin.ignore(numeric_limits<streamsize>::max(), '\n');
 			cout << "Enter CNIC (13 digits): ";
 			getline(cin, cnic);
+			cnic = trim(cnic);
 			if (all_of(cnic.begin(), cnic.end(), ::isdigit) && cnic.length() == 13) {
 				checkApplicationsByCNIC(cnic);
 				continue;
@@ -2210,6 +2295,7 @@ void startBot() {
 			cin.ignore(numeric_limits<streamsize>::max(), '\n');
 			cout << "Enter CNIC (13 digits): ";
 			getline(cin, cnic);
+			cnic = trim(cnic);
 			if (all_of(cnic.begin(), cnic.end(), ::isdigit) && cnic.length() == 13) {
 				generateMonthlyPlan(cnic);
 				continue;
@@ -2224,6 +2310,7 @@ void startBot() {
 			cin.ignore(numeric_limits<streamsize>::max(), '\n');
 			cout << "Enter CNIC (13 digits): ";
 			getline(cin, cnic);
+			cnic = trim(cnic);
 			if (all_of(cnic.begin(), cnic.end(), ::isdigit) && cnic.length() == 13) {
 				displayAllLoanDetailsByCNIC(cnic);
 				continue;
@@ -2270,6 +2357,38 @@ void startBot() {
 			}
 			else {
 				continue;
+			}
+		}
+		if (input == "G" || input == "g") {
+			system("cls");
+			cout << "Entering General Conversation Mode...\n";
+			cout << "Chatbot initialized successfully!\n";
+			cout << "====================================\n";
+			cout << "   CONVERSATIONAL CHATBOT\n";
+			cout << "====================================\n\n";
+			Conversation generalConversation;
+			generalConversation.loadConversationFromFile("human_chat_corpus.txt");
+			string input = "";
+			cout << "Entered General Conversation Mode. Press X to return.\n";
+			while (true) {
+				cout << "\nYou: ";
+				cin.ignore(numeric_limits<streamsize>::max(), '\n');
+				getline(cin, input);
+				input = trim(input);
+				if (input == "X" || input == "x") {
+					system("cls");
+					cout << "Exiting General Conversation Mode...\n";
+					cout << "Loading chatbot resources...\n";
+					cout << "Chatbot initialized successfully!\n";
+					cout << "====================================\n";
+					cout << "   LOAN PROCESSING CHATBOT\n";
+					cout << "====================================\n\n";
+					cout << "Welcome! How can I assist you today?\n\n";
+					break;
+				}
+				transform(input.begin(), input.end(), input.begin(), ::tolower);
+				string response = generalConversation.getBestResponse(input);
+				cout << endl << response << endl;
 			}
 		}
 	}
