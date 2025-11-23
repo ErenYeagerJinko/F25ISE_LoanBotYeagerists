@@ -1503,6 +1503,11 @@ public:
 		while (true) {
 			cout << "Enter CNIC of Referee 1 (13 digits, no dashes): ";
 			getline(cin, referee1.cnic);
+			referee1.cnic = trim(referee1.cnic);
+			if (referee1.cnic == cnic) {
+				cout << "Referee CNIC cannot be same as applicant CNIC.\n";
+				continue;
+			}
 			trim(referee1.cnic);
 			if (validateCnic(referee1.cnic)) break;
 			cout << "Invalid CNIC! Must be exactly 13 digits.\n";
@@ -1520,6 +1525,10 @@ public:
 			cout << "Enter Phone Number of Referee 1 (11 or 13 digits): ";
 			getline(cin, referee1.phoneNumber);
 			referee1.phoneNumber = trim(referee1.phoneNumber);
+			if (referee1.phoneNumber == contactNumber) {
+				cout << "Referee contact number cannot be same as application contact number.\n";
+				continue;
+			}
 			if (validateContactNumber(referee1.phoneNumber)) break;
 			cout << "Invalid Phone Number! Must be 11 digits starting with 0 or 13 digits starting with +92.\n";
 		}
@@ -1529,6 +1538,10 @@ public:
 			getline(cin, referee1.emailAddress);
 			referee1.emailAddress = trim(referee1.emailAddress);
 			toLowerCase(referee1.emailAddress);
+			if (referee1.emailAddress == email) {
+				cout << "Referee email cannot be same as applicant email.\n";
+				continue;
+			}
 			if (validateEmail(referee1.emailAddress)) break;
 			cout << "Invalid Email Address! Example email: erenyeager@yeagerists.corps\n";
 		}
@@ -1550,6 +1563,14 @@ public:
 			cout << "Enter CNIC of Referee 2 (13 digits, no dashes): ";
 			getline(cin, referee2.cnic);
 			referee2.cnic = trim(referee2.cnic);
+			if (referee2.cnic == cnic) {
+				cout << "Referee CNIC cannot be same as applicant CNIC.\n";
+				continue;
+			}
+			if (referee1.cnic == referee2.cnic) {
+				cout << "Referees cannot have the same CNIC.\n";
+				continue;
+			}
 			if (validateCnic(referee2.cnic)) break;
 			cout << "Invalid CNIC! Must be exactly 13 digits.\n";
 		}
@@ -1566,6 +1587,14 @@ public:
 			cout << "Enter Phone Number of Referee 2 (11 or 13 digits): ";
 			getline(cin, referee2.phoneNumber);
 			referee2.phoneNumber = trim(referee2.phoneNumber);
+			if (referee2.phoneNumber == contactNumber) {
+				cout << "Referee contact number cannot be same as applicant contact number.\n";
+				continue;
+			}
+			if (referee1.phoneNumber == referee2.phoneNumber) {
+				cout << "Referees cannot have the same contact number.\n";
+				continue;
+			}
 			if (validateContactNumber(referee2.phoneNumber)) break;
 			cout << "Invalid Phone Number! Must be 11 digits starting with 0 or 13 digits starting with +92.\n";
 		}
@@ -1575,15 +1604,22 @@ public:
 			getline(cin, referee2.emailAddress);
 			referee2.phoneNumber = trim(referee2.phoneNumber);
 			toLowerCase(referee2.emailAddress);
+			if (referee1.emailAddress == email) {
+				cout << "Referee email cannot be same as applicant email.\n";
+				continue;
+			}
+			if (referee1.emailAddress == referee2.emailAddress) {
+				cout << "Referees cannot have the same email.\n";
+				continue;
+			}
 			if (validateEmail(referee2.emailAddress)) break;
 			cout << "Invalid Email Address! Example email: erenyeager@yeagerists.corps\n";
 		}
 	}
 
-	void inputImagePaths() {
+	void inputImagePaths(string applicationID) {
 		cout << "\n=== DOCUMENT IMAGES ===\n";
 
-		applicationID = generateApplicationID();
 
 		string dataFolder = "./data";
 		string appFolder = dataFolder + "/" + applicationID;
@@ -1860,61 +1896,6 @@ public:
 		}
 	}
 
-	void saveToFile() {
-		ofstream file("applications.txt", ios::app);
-		if (!file) {
-			cout << "Error! Could not open applications.txt for writing!\n";
-			return;
-		}
-
-		file << applicationID << "#"
-			<< fullName << "#"
-			<< fatherName << "#"
-			<< postalAddress << "#"
-			<< contactNumber << "#"
-			<< email << "#"
-			<< cnic << "#"
-			<< cnicExpiryDate << "#"
-			<< employmentStatus << "#"
-			<< maritalStatus << "#"
-			<< gender << "#"
-			<< numberOfDependents << "#"
-			<< annualIncome << "#"
-			<< avgElectricityBill << "#"
-			<< currentElectricityBill << "#"
-			<< referee1.name << "#"
-			<< referee1.cnic << "#"
-			<< referee1.cnicIssueDate << "#"
-			<< referee1.phoneNumber << "#"
-			<< referee1.emailAddress << "#"
-			<< referee2.name << "#"
-			<< referee2.cnic << "#"
-			<< referee2.cnicIssueDate << "#"
-			<< referee2.phoneNumber << "#"
-			<< referee2.emailAddress << "#"
-			<< images.cnicFrontPath << "#"
-			<< images.cnicBackPath << "#"
-			<< images.electricityBillPath << "#"
-			<< images.salarySlipPath << "#"
-			<< applicationStatus << "#" << loanType << "#"
-			<< selectedMake << "#"
-			<< selectedArea << "#"
-			<< selectedHomeIndex << "#"
-			<< selectedCarIndex << "#"
-			<< selectedScooterIndex << "#"
-			<< selectedHomeDetails << "#"
-			<< selectedCarDetails << "#"
-			<< selectedScooterDetails << "#" 
-			<< selectedPersonalIndex << "#"
-			<< selectedPersonalDetails << "#" << endl;
-
-		file.close();
-		cout << "\n====================================\n";
-		cout << "Application submitted successfully!\n";
-		cout << "Application ID: " << applicationID << endl;
-		cout << "Status: " << applicationStatus << endl;
-		cout << "====================================\n";
-	}
 	void initializeApplicationID() {
 		if (applicationID.empty()) {
 			applicationID = generateApplicationID();
@@ -1929,6 +1910,32 @@ public:
 	void saveToFile() {
 		applicationStatus = "submitted";
 		writeApplicationRecord(true);
+	}
+
+	void removeFromFile(const string& filename, const string& numberToRemove) {
+		ifstream inFile(filename);
+
+		vector<string> lines;
+		string line;
+
+		while (getline(inFile, line)) {
+			if (line.substr(0, line.find('#')) != numberToRemove) {
+				lines.push_back(line);
+			}
+		}
+		inFile.close();
+
+		if (lines.size() == 0) {
+			return;
+		}
+
+		ofstream outFile(filename);
+
+		for (const auto& line : lines) {
+			outFile << line << endl;
+		}
+
+		outFile.close();
 	}
 };
 
@@ -2058,7 +2065,8 @@ void checkApplicationsByCNIC(const string& cnic) {
 			}
 			else if (status == "rejected") rejected++;
 			else {
-				cout << "Unexpected status: " << status << endl;
+				cout << "Incomplete Application!\n"<< endl;
+				return;
 			}
 		}
 	}
@@ -2613,16 +2621,34 @@ void startBot() {
 
 				cout << "\nPress 1 to start a NEW application.\n";
 				cout << "Press 2 to CONTINUE an existing incomplete application.\n";
-				cout << "Your choice: ";
+				cout << "\nYour choice: ";
 				string appChoice;
 				getline(cin, appChoice);
-
+				appChoice = trim(appChoice);
 				if (appChoice == "2") {
 					string appID, cnic;
 					cout << "Enter your previous Application ID: ";
 					getline(cin, appID);
+					appID = trim(appID);
+					if (!all_of(appID.begin(), appID.end(), ::isdigit) || appID.length() != 4) {
+						cout << "Invalid ID. Please try again.\n\n";
+						while (all_of(appID.begin(), appID.end(), ::isdigit) || appID.length() != 4) {
+							cout << "Enter your previous Application ID: ";
+							getline(cin, appID);
+							appID = trim(appID);
+						}
+					}
 					cout << "Enter your CNIC (13 digits, no dashes): ";
 					getline(cin, cnic);
+					cnic = trim(cnic);
+					if (!all_of(cnic.begin(), cnic.end(), ::isdigit) || cnic.length() != 13) {
+						cout << "Invalid CNIC. Please try again.\n\n";
+						while (all_of(cnic.begin(), cnic.end(), ::isdigit) || cnic.length() != 13) {
+							cout << "Enter your CNIC (13 digits, no dashes): ";
+							getline(cin, cnic);
+							cnic = trim(cnic);
+						}
+					}
 
 					LoanSeeker applicant;
 					string status;
@@ -2638,22 +2664,42 @@ void startBot() {
 						applicant.inputAvgElectricityBill();
 						applicant.inputCurrentElectricityBill();
 						applicant.saveCheckpoint("C2");
+						string proceed;
+						cout << "Checkpoint 2: Saved!\nDo you want to continue? (Y/n)  ";
+						getline(cin, proceed);
+						proceed = trim(proceed);
+						if (proceed != "Y" && proceed != "y") {
+							continue;
+						}
 
 						applicant.inputRefereeDetails();
 						applicant.saveCheckpoint("C3");
+						cout << "Checkpoint 3: Saved!\nDo you want to continue? Y/n  ";
+						getline(cin, proceed);
+						proceed = trim(proceed);
+						if (proceed != "Y" && proceed != "y") {
+							continue;
+						}
 
-						applicant.inputImagePaths();
+						applicant.inputImagePaths(applicant.applicationID);
 						applicant.inputLoanTypeAndSelection();
 					}
 					else if (status == "C2") {
 						applicant.inputRefereeDetails();
 						applicant.saveCheckpoint("C3");
+						string proceed;
+						cout << "Checkpoint 3: Saved!\nDo you want to continue? Y/n  ";
+						getline(cin, proceed);
+						proceed = trim(proceed);
+						if (proceed != "Y" && proceed != "y") {
+							continue;
+						}
 
-						applicant.inputImagePaths();
+						applicant.inputImagePaths(applicant.applicationID);
 						applicant.inputLoanTypeAndSelection();
 					}
 					else if (status == "C3") {
-						applicant.inputImagePaths();
+						applicant.inputImagePaths(applicant.applicationID);
 						applicant.inputLoanTypeAndSelection();
 					}
 
@@ -2663,10 +2709,11 @@ void startBot() {
 						applicant.saveToFile();
 					}
 					else {
-						cout << "\nApplication not submitted. You can continue later using your Application ID.\n";
+						cout << "\nApplication not submitted.\n";
+						applicant.removeFromFile(applicant.applicationID, "applications.txt");
 					}
 				}
-				else {
+				else if (appChoice == "1") {
 					LoanSeeker applicant;
 
 					cout << "\n=== LOAN APPLICATION FORM ===\n\n";
@@ -2688,16 +2735,35 @@ void startBot() {
 					cout << "Please keep it safe to continue your application later if needed.\n\n";
 
 					applicant.saveCheckpoint("C1");
+					cout << "Checkpoint 1: Saved!\nDo you want to continue? (Y/n)  ";
+					string proceed;
+					getline(cin, proceed);
+					proceed = trim(proceed);
+					if (proceed != "Y" && proceed != "y") {
+						continue;
+					}
 
 					applicant.inputAnnualIncome();
 					applicant.inputAvgElectricityBill();
 					applicant.inputCurrentElectricityBill();
 					applicant.saveCheckpoint("C2");
+					cout << "Checkpoint 2: Saved!\nDo you want to continue? (Y/n)  ";
+					getline(cin, proceed);
+					proceed = trim(proceed);
+					if (proceed != "Y" && proceed != "y") {
+						continue;
+					}
 
 					applicant.inputRefereeDetails();
 					applicant.saveCheckpoint("C3");
+					cout << "Checkpoint 3: Saved!\nDo you want to continue? Y/n  ";
+					getline(cin, proceed);
+					proceed = trim(proceed);
+					if (proceed != "Y" && proceed != "y") {
+						continue;
+					}
 
-					applicant.inputImagePaths();
+					applicant.inputImagePaths(applicant.applicationID);
 					applicant.inputLoanTypeAndSelection();
 					applicant.displaySummary();
 
@@ -2705,8 +2771,13 @@ void startBot() {
 						applicant.saveToFile();
 					}
 					else {
-						cout << "\nApplication not submitted. Your data up to the last checkpoint has been saved.\n";
+						cout << "\nApplication not submitted.\n";
+						applicant.removeFromFile(applicant.applicationID, "applications.txt");
 					}
+				}
+				else {
+					cout << "Invalid Choice!\n";
+					continue;
 				}
 			}
 			else {
