@@ -1,4 +1,3 @@
-
 #pragma once
 #include <iostream>
 #include <limits>
@@ -260,7 +259,7 @@ public:
 			return;
 		}
 		string line;
-		getline(file, line);
+		getline(file, line); 
 
 		int index = 0;
 		while (getline(file, line) && index < numberOfLines) {
@@ -357,38 +356,38 @@ public:
 	int numberOfLines;
 	string* make;
 	string* model;
-	int* engine;
-	string* used;
+	int* engine;       
+	string* used;       
 	int* year;
 	int* installments;
 	int* price;
 	int* downPayment;
-
+	
 	CarLoan() {
 		numberOfLines = numberOfLinesInFile("Car.txt");
 		if (numberOfLines > 0) numberOfLines -= 1;
 
 		make = new string[numberOfLines];
 		model = new string[numberOfLines];
-		engine = new int[numberOfLines];
-		used = new string[numberOfLines];
+		engine = new int[numberOfLines];   
+		used = new string[numberOfLines];   
 		year = new int[numberOfLines];
 		installments = new int[numberOfLines];
 		price = new int[numberOfLines];
 		downPayment = new int[numberOfLines];
-
+		
 	}
 
 	~CarLoan() {
 		delete[] make;
 		delete[] model;
-		delete[] engine;
-		delete[] used;
+		delete[] engine;    
+		delete[] used;      
 		delete[] year;
 		delete[] installments;
 		delete[] price;
 		delete[] downPayment;
-
+		
 		make = model = used = nullptr;
 		year = engine = installments = price = downPayment = nullptr;
 	}
@@ -400,53 +399,53 @@ public:
 			return;
 		}
 		string line;
-		getline(file, line);
+		getline(file, line); 
 
 		int index = 0;
 		while (getline(file, line) && index < numberOfLines) {
 			int pos = 0;
 			string token;
 
-
+			
 			pos = line.find('#');
 			make[index] = line.substr(0, pos);
 			line.erase(0, pos + 1);
 
-
+			
 			pos = line.find('#');
 			model[index] = line.substr(0, pos);
 			line.erase(0, pos + 1);
 
-
+			
 			pos = line.find('#');
 			token = line.substr(0, pos);
 			engine[index] = extractInteger(token);
 			line.erase(0, pos + 1);
 
-
+			
 			pos = line.find('#');
 			used[index] = line.substr(0, pos);
 			line.erase(0, pos + 1);
 
-
+			
 			pos = line.find('#');
 			token = line.substr(0, pos);
 			year[index] = extractInteger(token);
 			line.erase(0, pos + 1);
 
-
+		
 			pos = line.find('#');
 			token = line.substr(0, pos);
 			installments[index] = extractInteger(token);
 			line.erase(0, pos + 1);
 
-
+		
 			pos = line.find('#');
 			token = line.substr(0, pos);
-			price[index] = extractInteger(token);
+			price[index] = extractInteger(token); 
 			line.erase(0, pos + 1);
 
-
+			
 			downPayment[index] = extractInteger(line);
 
 			++index;
@@ -515,20 +514,6 @@ public:
 	}
 };
 
-struct Referee {
-	string name;
-	string cnic;
-	string cnicIssueDate;
-	string phoneNumber;
-	string emailAddress;
-};
-
-struct ApplicantImages {
-	string cnicFrontPath;
-	string cnicBackPath;
-	string electricityBillPath;
-	string salarySlipPath;
-};
 class PersonalLoan {
 public:
 	int numberOfLines;
@@ -560,7 +545,7 @@ public:
 			return;
 		}
 		string line;
-		getline(file, line); // Skip header
+		getline(file, line); 
 		int index = 0;
 		while (getline(file, line) && index < numberOfLines) {
 			size_t pos = 0;
@@ -614,35 +599,48 @@ public:
 		}
 	}
 
-	void generateInstallmentPlanForOption(int option) {
-		if (option < 1 || option > numberOfLines) {
-			cout << "Invalid personal loan selection.\n";
-			return;
+	void generateInstallmentPlan() {
+		for (int i = 0; i < numberOfLines; i++) {
+			int monthlyInstallment = (amount[i] - downPayment[i]) / installments[i];
+			cout << "\nFor " << category[i] << " Loan:\n";
+			cout << "Total Amount: " << amount[i] << "\n";
+			cout << "Down Payment: " << downPayment[i] << "\n";
+			cout << "Installments: " << installments[i] << " months\n";
+			cout << "Monthly Installment: " << monthlyInstallment << endl;
+			cout << "------------------------\n";
 		}
-		int idx = option - 1;
-		int monthlyInstallment = (amount[idx] - downPayment[idx]) / installments[idx];
-		cout << "\nFor " << category[idx] << " Loan:\n";
-		cout << "Total Amount: " << amount[idx] << "\n";
-		cout << "Down Payment: " << downPayment[idx] << "\n";
-		cout << "Installments: " << installments[idx] << " months\n";
-		cout << "Monthly Installment: " << monthlyInstallment << endl;
-		cout << "------------------------\n";
 	}
 };
+
+struct Referee {
+    string name;
+    string cnic;
+    string cnicIssueDate;
+    string phoneNumber;
+    string emailAddress;
+};
+
+struct ApplicantImages {
+    string cnicFrontPath;
+    string cnicBackPath;
+    string electricityBillPath;
+    string salarySlipPath;
+};
+
 class LoanSeeker {
 private:
-	bool validateAlphabetString(const string& str) {
-		return all_of(str.begin(), str.end(), [](char c) { return isalpha(c) || isspace(c); });
-	}
+    bool validateAlphabetString(const string& str) {
+        return all_of(str.begin(), str.end(), [](char c) { return isalpha(c) || isspace(c); });
+    }
 
-	bool validateNumeric(const string& str) {
-		return all_of(str.begin(), str.end(), ::isdigit);
-	}
+    bool validateNumeric(const string& str) {
+        return all_of(str.begin(), str.end(), ::isdigit);
+    }
 
 	bool validateEmail(const std::string& str) {
 		size_t atPos = str.find('@');
 		if (atPos == std::string::npos) {
-			return false;
+			return false; 
 		}
 		if (atPos == 0 || atPos == str.length() - 1) {
 			return false;
@@ -650,7 +648,7 @@ private:
 
 		size_t dotPos = str.find('.', atPos);
 		if (dotPos == std::string::npos || dotPos == str.length() - 1) {
-			return false;
+			return false; 
 		}
 
 		if (dotPos == atPos + 1) {
@@ -662,13 +660,13 @@ private:
 		return true;
 	}
 
-	bool validateContactNumber(const string& str) {
-		return (str.size() == 11 && str[0] == '0') || (str.size() == 13 && str.substr(0, 3) == "+92");
-	}
+    bool validateContactNumber(const string& str) {
+        return (str.size() == 11 && str[0] == '0') || (str.size() == 13 && str.substr(0, 3) == "+92");
+    }
 
-	bool validateCnic(const string& str) {
-		return str.size() == 13 && validateNumeric(str);
-	}
+    bool validateCnic(const string& str) {
+        return str.size() == 13 && validateNumeric(str);
+    }
 
 	bool validateDate(const std::string& str) {
 		int day, month, year;
@@ -691,33 +689,31 @@ private:
 		return false;
 	}
 
-	bool validateEmploymentStatus(const string& str) {
-		return str == "self" || str == "salaried" || str == "retired" || str == "unemployed";
-	}
+    bool validateEmploymentStatus(const string& str) {
+        return str == "self" || str == "salaried" || str == "retired" || str == "unemployed";
+    }
 
-	bool validateMaritalStatus(const string& str) {
-		return str == "widowed" || str == "single" || str == "married" || str == "divorced";
-	}
+    bool validateMaritalStatus(const string& str) {
+        return str == "widowed" || str == "single" || str == "married" || str == "divorced";
+    }
 
-	bool validateGender(const string& str) {
-		return str == "male" || str == "female" || str == "other";
-	}
+    bool validateGender(const string& str) {
+        return str == "male" || str == "female" || str == "other";
+    }
 
-	void capitalizeWords(string& str) {
-		bool newWord = true;
-		for (char& c : str) {
-			if (newWord && isalpha(c)) {
-				c = toupper(c);
-				newWord = false;
-			}
-			else if (isspace(c)) {
-				newWord = true;
-			}
-			else {
-				c = tolower(c);
-			}
-		}
-	}
+    void capitalizeWords(string& str) {
+        bool newWord = true;
+        for (char& c : str) {
+            if (newWord && isalpha(c)) {
+                c = toupper(c);
+                newWord = false;
+            } else if (isspace(c)) {
+                newWord = true;
+            } else {
+                c = tolower(c);
+            }
+        }
+    }
 
 	bool validateYesNo(const string& str) {
 		return str == "yes" || str == "y" || str == "no" || str == "n";
@@ -745,7 +741,7 @@ private:
 				stringstream ss(line);
 				string id;
 				getline(ss, id, '#');
-				ids.push_back(id);
+				ids.push_back(id); 
 			}
 			file.close();
 		}
@@ -769,7 +765,7 @@ private:
 			isUnique = true;
 			for (const string& id : existingIDs) {
 				if (id == newID) {
-					isUnique = false;
+					isUnique = false; 
 					break;
 				}
 			}
@@ -954,8 +950,40 @@ private:
 		}
 	}
 
+	void selectPersonalLoan() {
+		PersonalLoan personalLoan;
+		personalLoan.initializePersonalLoan();
+		if (personalLoan.numberOfLines == 0) {
+			cout << "No personal loans available!\n";
+			loanType = "";
+			return;
+		}
+
+		cout << "\nAvailable Personal Loans:\n";
+		cout << "====================================\n";
+		personalLoan.displayPersonalLoans();
+
+		while (true) {
+			cout << "\nSelect a loan (1-" << personalLoan.numberOfLines << "): ";
+			string choiceInput;
+			getline(cin, choiceInput);
+			if (validateChoice(choiceInput, personalLoan.numberOfLines)) {
+				int choice = stoi(choiceInput);
+				selectedPersonalIndex = choice - 1;
+				selectedPersonalDetails = "Category:" + personalLoan.category[selectedPersonalIndex] +
+					",Amount:" + to_string(personalLoan.amount[selectedPersonalIndex]) +
+					",DownPayment:" + to_string(personalLoan.downPayment[selectedPersonalIndex]);
+				cout << "\nSelected: " << personalLoan.category[selectedPersonalIndex]
+					<< " Loan for " << personalLoan.amount[selectedPersonalIndex] << " PKR\n";
+				break;
+			}
+			cout << "Invalid selection! Please enter a number between 1 and "
+				<< personalLoan.numberOfLines << ".\n";
+		}
+	}
+
 	bool validateLoanType(const string& str) {
-		return str == "home" || str == "car" || str == "scooter";
+		return str == "home" || str == "car" || str == "scooter" || str == "personal";
 	}
 
 	bool validateArea(const string& str) {
@@ -989,7 +1017,7 @@ private:
 
 	bool createDirectory(const string& dirPath) {
 		struct stat info;
-		if (stat(dirPath.c_str(), &info) != 0) {
+		if (stat(dirPath.c_str(), &info) != 0) {  
 			if (_mkdir(dirPath.c_str()) != 0) {
 				cout << "Error creating directory: " << dirPath << endl;
 				return false;
@@ -1007,245 +1035,210 @@ private:
 			return false;
 		}
 
-		dest << src.rdbuf();
+		dest << src.rdbuf();  
 		return true;
 	}
 
 public:
-	string fullName, fatherName, postalAddress, contactNumber, email, cnic, cnicExpiryDate;
-	string employmentStatus, maritalStatus, gender;
-	int numberOfDependents;
-	float annualIncome, avgElectricityBill, currentElectricityBill;
+    string fullName, fatherName, postalAddress, contactNumber, email, cnic, cnicExpiryDate;
+    string employmentStatus, maritalStatus, gender;
+    int numberOfDependents;
+    float annualIncome, avgElectricityBill, currentElectricityBill;
 
 	bool hasExistingLoan;
 	Referee referee1, referee2;
 	ApplicantImages images;
 	string applicationID;
-	string applicationStatus;
-	int selectedArea;
+	string applicationStatus; 
+	int selectedArea;      
 
 	string loanType;
-	string selectedMake;
-	int selectedHomeIndex;
-	int selectedCarIndex;
-	int selectedScooterIndex;
-	string selectedHomeDetails;
-	string selectedCarDetails;
-	string selectedScooterDetails;
+	string selectedMake;      
+	int selectedHomeIndex;    
+	int selectedCarIndex;     
+	int selectedScooterIndex; 
+	string selectedHomeDetails; 
+	string selectedCarDetails;  
+	string selectedScooterDetails; 
 	int selectedPersonalIndex;
 	string selectedPersonalDetails;
-	LoanSeeker() {
-		selectedPersonalIndex = -1;
-		selectedPersonalDetails = "";
-		hasExistingLoan = false;
-		applicationID = "";
-		annualIncome = 0.0f;
-		avgElectricityBill = 0.0f;
-		currentElectricityBill = 0.0f;
-		numberOfDependents = 0;
-		applicationStatus = "submitted";
-		selectedArea = 0;
-		loanType = "";
-		selectedMake = "";
-		selectedArea = 0;
-		selectedHomeIndex = -1;
-		selectedCarIndex = -1;
-		selectedScooterIndex = -1;
-		selectedHomeDetails = "";
-		selectedCarDetails = "";
-		selectedScooterDetails = "";
-	}
-	void selectPersonalLoan() {
-		PersonalLoan personalLoan;
-		personalLoan.initializePersonalLoan();
-		if (personalLoan.numberOfLines == 0) {
-			cout << "No personal loans available!\n";
-			loanType = "";
-			return;
-		}
 
-		cout << "\nAvailable Personal Loans:\n";
-		cout << "====================================\n";
-		personalLoan.displayPersonalLoans();
-
-		while (true) {
-			cout << "\nSelect a loan (1-" << personalLoan.numberOfLines << "): ";
-			string choiceInput;
-			getline(cin, choiceInput);
-			if (validateChoice(choiceInput, personalLoan.numberOfLines)) {
-				int choice = stoi(choiceInput);
-				selectedPersonalIndex = choice - 1;
-				selectedPersonalDetails = "Category:" + personalLoan.category[selectedPersonalIndex] +
-					",Amount:" + to_string(personalLoan.amount[selectedPersonalIndex]) +
-					",DownPayment:" + to_string(personalLoan.downPayment[selectedPersonalIndex]);
-				cout << "\nSelected: " << personalLoan.category[selectedPersonalIndex]
-					<< " Loan for " << personalLoan.amount[selectedPersonalIndex] << " PKR\n";
-				break;
-			}
-			cout << "Invalid selection! Please enter a number between 1 and "
-				<< personalLoan.numberOfLines << ".\n";
-		}
-	}
-	void inputFullName() {
-		while (true) {
-			cout << "Enter Full Name: ";
-			getline(cin, fullName);
-			if (validateAlphabetString(fullName)) {
-				capitalizeWords(fullName);
-				break;
-			}
-			else {
-				cout << "Full Name should contain only alphabets and spaces!\n";
-			}
-		}
+LoanSeeker() {
+	selectedPersonalIndex = -1;
+	selectedPersonalDetails = "";
+    hasExistingLoan = false;
+    applicationID = "";
+    annualIncome = 0.0f;
+    avgElectricityBill = 0.0f;
+    currentElectricityBill = 0.0f;
+    numberOfDependents = 0;
+	applicationStatus = "submitted";
+	selectedArea = 0;
+	loanType = "";
+	selectedMake = "";
+	selectedArea = 0;
+	selectedHomeIndex = -1;
+	selectedCarIndex = -1;
+	selectedScooterIndex = -1;
+	selectedHomeDetails = "";
+	selectedCarDetails = "";
+	selectedScooterDetails = "";
 	}
 
-	void inputFatherName() {
-		while (true) {
-			cout << "Enter Father's Name: ";
-			getline(cin, fatherName);
-			if (validateAlphabetString(fatherName)) {
-				capitalizeWords(fatherName);
-				break;
-			}
-			else {
-				cout << "Father's Name should contain only alphabets and spaces!\n";
-			}
-		}
-	}
+    void inputFullName() {
+        while (true) {
+            cout << "Enter Full Name: ";
+            getline(cin, fullName);
+            if (validateAlphabetString(fullName)) {
+                capitalizeWords(fullName);
+                break;
+            } else {
+                cout << "Full Name should contain only alphabets and spaces!\n";
+            }
+        }
+    }
 
-	void inputPostalAddress() {
-		cout << "Enter Postal Address: ";
-		getline(cin, postalAddress);
-		capitalizeWords(postalAddress);
-	}
+    void inputFatherName() {
+        while (true) {
+            cout << "Enter Father's Name: ";
+            getline(cin, fatherName);
+            if (validateAlphabetString(fatherName)) {
+                capitalizeWords(fatherName);
+                break;
+            } else {
+                cout << "Father's Name should contain only alphabets and spaces!\n";
+            }
+        }
+    }
 
-	void inputContactNumber() {
-		while (true) {
-			cout << "Enter Contact Number (11 or 13 digits): ";
-			getline(cin, contactNumber);
-			if (validateContactNumber(contactNumber)) break;
-			cout << "Invalid Contact Number! Must be 11 digits starting with 0 or 13 digits starting with +92.\n";
-		}
-	}
+    void inputPostalAddress() {
+        cout << "Enter Postal Address: ";
+        getline(cin, postalAddress);
+        capitalizeWords(postalAddress);
+    }
 
-	void inputEmail() {
-		while (true) {
-			cout << "Enter Email Address: ";
-			getline(cin, email);
-			transform(email.begin(), email.end(), email.begin(), ::tolower);
-			if (validateEmail(email)) break;
-			cout << "Invalid Email Address! Example email: erenyeager@yeagerists.corps\n";
-		}
-	}
+    void inputContactNumber() {
+        while (true) {
+            cout << "Enter Contact Number (11 or 13 digits): ";
+            getline(cin, contactNumber);
+            if (validateContactNumber(contactNumber)) break;
+            cout << "Invalid Contact Number! Must be 11 digits starting with 0 or 13 digits starting with +92.\n";
+        }
+    }
 
-	void inputCnic() {
-		while (true) {
-			cout << "Enter CNIC (13 digits, no dashes): ";
-			getline(cin, cnic);
-			if (validateCnic(cnic)) break;
-			cout << "Invalid CNIC! Must be exactly 13 digits.\n";
-		}
-	}
+    void inputEmail() {
+        while (true) {
+            cout << "Enter Email Address: ";
+            getline(cin, email);
+            transform(email.begin(), email.end(), email.begin(), ::tolower);
+            if (validateEmail(email)) break;
+            cout << "Invalid Email Address! Example email: erenyeager@yeagerists.corps\n";
+        }
+    }
 
-	void inputCnicExpiryDate() {
-		while (true) {
-			cout << "Enter CNIC Expiry Date (DD-MM-YYYY): ";
-			getline(cin, cnicExpiryDate);
-			if (validateDate(cnicExpiryDate)) break;
-			cout << "Invalid date! Format must be DD-MM-YYYY with valid day/month/year values.\n";
-		}
-	}
+    void inputCnic() {
+        while (true) {
+            cout << "Enter CNIC (13 digits, no dashes): ";
+            getline(cin, cnic);
+            if (validateCnic(cnic)) break;
+            cout << "Invalid CNIC! Must be exactly 13 digits.\n";
+        }
+    }
 
-	void inputEmploymentStatus() {
-		while (true) {
-			cout << "Enter Employment Status (self, salaried, retired, unemployed): ";
-			getline(cin, employmentStatus);
-			transform(employmentStatus.begin(), employmentStatus.end(), employmentStatus.begin(), ::tolower);
-			if (validateEmploymentStatus(employmentStatus)) break;
-			cout << "Invalid Employment Status!\n";
-		}
-	}
+    void inputCnicExpiryDate() {
+        while (true) {
+            cout << "Enter CNIC Expiry Date (DD-MM-YYYY): ";
+            getline(cin, cnicExpiryDate);
+            if (validateDate(cnicExpiryDate)) break;
+            cout << "Invalid date! Format must be DD-MM-YYYY with valid day/month/year values.\n";
+        }
+    }
 
-	void inputMaritalStatus() {
-		while (true) {
-			cout << "Enter Marital Status (widowed, single, married, divorced): ";
-			getline(cin, maritalStatus);
-			transform(maritalStatus.begin(), maritalStatus.end(), maritalStatus.begin(), ::tolower);
-			if (validateMaritalStatus(maritalStatus)) break;
-			cout << "Invalid Marital Status!\n";
-		}
-	}
+    void inputEmploymentStatus() {
+        while (true) {
+            cout << "Enter Employment Status (self, salaried, retired, unemployed): ";
+            getline(cin, employmentStatus);
+            transform(employmentStatus.begin(), employmentStatus.end(), employmentStatus.begin(), ::tolower);
+            if (validateEmploymentStatus(employmentStatus)) break;
+            cout << "Invalid Employment Status!\n";
+        }
+    }
 
-	void inputGender() {
-		while (true) {
-			cout << "Enter Gender (male, female, other): ";
-			getline(cin, gender);
-			transform(gender.begin(), gender.end(), gender.begin(), ::tolower);
-			if (validateGender(gender)) break;
-			cout << "Invalid Gender!\n";
-		}
-	}
+    void inputMaritalStatus() {
+        while (true) {
+            cout << "Enter Marital Status (widowed, single, married, divorced): ";
+            getline(cin, maritalStatus);
+            transform(maritalStatus.begin(), maritalStatus.end(), maritalStatus.begin(), ::tolower);
+            if (validateMaritalStatus(maritalStatus)) break;
+            cout << "Invalid Marital Status!\n";
+        }
+    }
 
-	void inputNumberOfDependents() {
-		string input;
-		while (true) {
-			cout << "Enter Number of Dependents: ";
-			getline(cin, input);
-			if (validateNumeric(input)) {
-				numberOfDependents = stoi(input);
-				break;
-			}
-			else {
-				cout << "Invalid number! Must contain only digits.\n";
-			}
-		}
-	}
+    void inputGender() {
+        while (true) {
+            cout << "Enter Gender (male, female, other): ";
+            getline(cin, gender);
+            transform(gender.begin(), gender.end(), gender.begin(), ::tolower);
+            if (validateGender(gender)) break;
+            cout << "Invalid Gender!\n";
+        }
+    }
 
-	void inputAnnualIncome() {
-		while (true) {
-			cout << "Enter Annual Income (no commas): ";
-			string input;
-			getline(cin, input);
-			if (validateNumeric(input)) {
-				annualIncome = stof(input);
-				break;
-			}
-			else {
-				cout << "Invalid input! Must contain only digits.\n";
-			}
-		}
-	}
+    void inputNumberOfDependents() {
+        string input;
+        while (true) {
+            cout << "Enter Number of Dependents: ";
+            getline(cin, input);
+            if (validateNumeric(input)) {
+                numberOfDependents = stoi(input);
+                break;
+            } else {
+                cout << "Invalid number! Must contain only digits.\n";
+            }
+        }
+    }
 
-	void inputAvgElectricityBill() {
-		while (true) {
-			cout << "Enter Average Electricity Bill (no commas): ";
-			string input;
-			getline(cin, input);
-			if (validateNumeric(input)) {
-				avgElectricityBill = stof(input);
-				break;
-			}
-			else {
-				cout << "Invalid input! Must contain only digits.\n";
-			}
-		}
-	}
+    void inputAnnualIncome() {
+        while (true) {
+            cout << "Enter Annual Income (no commas): ";
+            string input;
+            getline(cin, input);
+            if (validateNumeric(input)) {
+                annualIncome = stof(input);
+                break;
+            } else {
+                cout << "Invalid input! Must contain only digits.\n";
+            }
+        }
+    }
 
-	void inputCurrentElectricityBill() {
-		while (true) {
-			cout << "Enter Current Electricity Bill (exact): ";
-			string input;
-			getline(cin, input);
-			if (validateNumeric(input)) {
-				currentElectricityBill = stof(input);
-				break;
-			}
-			else {
-				cout << "Invalid input! Must contain only digits.\n";
-			}
-		}
-	}
+    void inputAvgElectricityBill() {
+        while (true) {
+            cout << "Enter Average Electricity Bill (no commas): ";
+            string input;
+            getline(cin, input);
+            if (validateNumeric(input)) {
+                avgElectricityBill = stof(input);
+                break;
+            } else {
+                cout << "Invalid input! Must contain only digits.\n";
+            }
+        }
+    }
+
+    void inputCurrentElectricityBill() {
+        while (true) {
+            cout << "Enter Current Electricity Bill (exact): ";
+            string input;
+            getline(cin, input);
+            if (validateNumeric(input)) {
+                currentElectricityBill = stof(input);
+                break;
+            } else {
+                cout << "Invalid input! Must contain only digits.\n";
+            }
+        }
+    }
 
 	void inputRefereeDetails() {
 		cout << "\n=== REFEREE DETAILS ===\n";
@@ -1439,17 +1432,18 @@ public:
 
 		cout << "\nImage paths validated and copied successfully!\n";
 	}
+
 	void inputLoanTypeAndSelection() {
 		cout << "\n=== LOAN TYPE SELECTION ===\n";
+
 		while (true) {
 			cout << "Select loan type (home/car/scooter/personal): ";
 			getline(cin, loanType);
 			transform(loanType.begin(), loanType.end(), loanType.begin(), ::tolower);
-			if (loanType == "home" || loanType == "car" || loanType == "scooter" || loanType == "personal") {
-				break;
-			}
-			cout << "Invalid loan type! Please enter 'home', 'car', 'scooter', or 'personal'.\n";
+			if (validateLoanType(loanType)) break;
+			cout << "Invalid loan type! Please enter 'home', 'car', 'scooter' or 'personal'.\n";
 		}
+
 		if (loanType == "home") {
 			selectHomeLoan();
 		}
@@ -1530,26 +1524,6 @@ public:
 				cout << "Selected Make: " << "Make 1" << endl;
 			}
 		}
-		else if (loanType == "personal") {
-			if (!selectedPersonalDetails.empty()) {
-				stringstream ss(selectedPersonalDetails);
-				string token;
-				while (getline(ss, token, ',')) {
-					size_t colonPos = token.find(':');
-					if (colonPos != string::npos) {
-						string key = token.substr(0, colonPos);
-						string value = token.substr(colonPos + 1);
-						if (!key.empty()) {
-							key[0] = toupper(key[0]);
-						}
-						cout << key << ": " << value << endl;
-					}
-				}
-			}
-			else {
-				cout << "Personal Loan Details: Not specified\n";
-			}
-		}
 		else if (loanType == "scooter") {
 			if (!selectedScooterDetails.empty()) {
 				stringstream ss(selectedScooterDetails);
@@ -1574,6 +1548,26 @@ public:
 			}
 			if (!selectedMake.empty()) {
 				cout << "Selected Make: " << (selectedMake == "1" ? "Make 1" : "Make 2") << endl;
+			}
+		}
+		else if (loanType == "personal") {
+			if (!selectedPersonalDetails.empty()) {
+				stringstream ss(selectedPersonalDetails);
+				string token;
+				while (getline(ss, token, ',')) {
+					size_t colonPos = token.find(':');
+					if (colonPos != string::npos) {
+						string key = token.substr(0, colonPos);
+						string value = token.substr(colonPos + 1);
+						if (!key.empty()) {
+							key[0] = toupper(key[0]);
+						}
+						cout << key << ": " << value << endl;
+					}
+				}
+			}
+			else {
+				cout << "Personal Loan Details: Not specified\n";
 			}
 		}
 		else {
@@ -1651,7 +1645,6 @@ public:
 			<< selectedHomeDetails << "#"
 			<< selectedCarDetails << "#"
 			<< selectedScooterDetails << "#" 
-		
 			<< selectedPersonalIndex << "#"
 			<< selectedPersonalDetails << "#" << endl;
 
@@ -1680,16 +1673,13 @@ void checkApplicationsByCNIC(const string& cnic) {
 		string token;
 		int fieldCount = 0;
 		string fileCnic, status, appID, loanType;
-		int selectedPersonalIndex = -1; 
-		string selectedPersonalDetails = ""; 
+
 		while (getline(ss, token, '#')) {
 			fieldCount++;
 			if (fieldCount == 1) appID = token;
 			if (fieldCount == 7) fileCnic = token;
 			if (fieldCount == 30) status = token;
 			if (fieldCount == 31) loanType = token;
-			if (fieldCount == 40) { if (!token.empty()) selectedPersonalIndex = stoi(token); } // 👈 new
-			if (fieldCount == 41) { selectedPersonalDetails = token; } // 👈 new
 		}
 
 		if (fileCnic == cnic) {
@@ -1772,12 +1762,10 @@ void checkApplicationsByCNIC(const string& cnic) {
 
 			if (!foundPaymentPlans) {
 				cout << "No payment plans generated for approved applications.\n";
-				cout << "Use 'M' option to generate monthly payment plans.\n";
 			}
 		}
 		else {
 			cout << "No payment plans found for approved applications.\n";
-			cout << "Use 'M' option to generate monthly payment plans.\n";
 		}
 	}
 	cout << "====================================\n\n";
@@ -1815,6 +1803,9 @@ void generateMonthlyPlan(const string& cnic) {
 	CarLoan carLoan;
 	carLoan.initializeCarLoan();
 
+	PersonalLoan personalLoan;
+	personalLoan.initializePersonalLoan();
+
 	while (getline(file, line)) {
 		stringstream ss(line);
 		string token;
@@ -1824,112 +1815,98 @@ void generateMonthlyPlan(const string& cnic) {
 		string selectedHomeDetails, selectedCarDetails, selectedScooterDetails;
 		int selectedPersonalIndex = -1;
 		string selectedPersonalDetails = "";
+
 		while (getline(ss, token, '#')) {
 			fieldCount++;
 			switch (fieldCount) {
-			case 1: appID = token; break;
-			case 7: fileCnic = token; break;
-			case 30: status = token; break;
-			case 31: loanType = token; break;
-			case 32: selectedMake = token; break;
-			case 33: if (!token.empty()) selectedArea = stoi(token); break;
-			case 34: if (!token.empty()) selectedHomeIndex = stoi(token); break;
-			case 35: if (!token.empty()) selectedCarIndex = stoi(token); break;
-			case 36: if (!token.empty()) selectedScooterIndex = stoi(token); break;
-			case 37: selectedHomeDetails = token; break;
-			case 38: selectedCarDetails = token; break;
-			case 39: selectedScooterDetails = token; break;
-			case 40: if (!token.empty()) selectedPersonalIndex = stoi(token); break;
-			case 41: selectedPersonalDetails = token; break;
+				case 1: appID = token; break;
+				case 7: fileCnic = token; break;
+				case 30: status = token; break;
+				case 31: loanType = token; break;
+				case 32: selectedMake = token; break;
+				case 33: if (!token.empty()) selectedArea = stoi(token); break;
+				case 34: if (!token.empty()) selectedHomeIndex = stoi(token); break;
+				case 35: if (!token.empty()) selectedCarIndex = stoi(token); break;
+				case 36: if (!token.empty()) selectedScooterIndex = stoi(token); break;
+				case 37: selectedHomeDetails = token; break;
+				case 38: selectedCarDetails = token; break;
+				case 39: selectedScooterDetails = token; break;
+				case 40: if (!token.empty()) selectedPersonalIndex = stoi(token); break;
+				case 41: selectedPersonalDetails = token; break;
 			}
 		}
 
-		if (fileCnic == cnic && status == "approved" &&
-			!loanType.empty() && loanType != "0" && loanType != "default" &&
-			applicationsWithPlans.find(appID) == applicationsWithPlans.end()) {
+			if (fileCnic == cnic && status == "approved" &&
+				!loanType.empty() && loanType != "0" && loanType != "default" &&
+				applicationsWithPlans.find(appID) == applicationsWithPlans.end()) {
 
-			foundApproved = true;
+				foundApproved = true;
 
-			int price = 0, downPayment = 0, installments = 0;
-			string description = "";
-			bool loanFound = false;
+				int price = 0, downPayment = 0, installments = 0;
+				string description = "";
+				bool loanFound = false;
 
-			if (loanType == "home" && selectedHomeIndex != -1) {
-				for (int i = 0; i < homeLoan.numberOfLines; i++) {
-					if (i == selectedHomeIndex) {
-						price = homeLoan.price[i];
-						downPayment = homeLoan.downPayment[i];
-						installments = homeLoan.installments[i];
-						description = "Home in Area " + to_string(homeLoan.area[i]) +
-							", Size: " + to_string(homeLoan.size[i]) + " Marla";
-						loanFound = true;
-						break;
+				if (loanType == "home" && selectedHomeIndex != -1) {
+					for (int i = 0; i < homeLoan.numberOfLines; i++) {
+						if (i == selectedHomeIndex) {
+							price = homeLoan.price[i];
+							downPayment = homeLoan.downPayment[i];
+							installments = homeLoan.installments[i];
+							description = "Home in Area " + to_string(homeLoan.area[i]) +
+								", Size: " + to_string(homeLoan.size[i]) + " Marla";
+							loanFound = true;
+							break;
+						}
 					}
 				}
-			}
-			else if (loanType == "car" && selectedCarIndex != -1) {
-				for (int i = 0; i < carLoan.numberOfLines; i++) {
-					if (i == selectedCarIndex) {
-						price = carLoan.price[i];
-						downPayment = carLoan.downPayment[i];
-						installments = carLoan.installments[i];
-						description = carLoan.make[i] + " " + carLoan.model[i] +
-							" (" + to_string(carLoan.year[i]) + ")";
-						loanFound = true;
-						break;
+				else if (loanType == "car" && selectedCarIndex != -1) {
+					for (int i = 0; i < carLoan.numberOfLines; i++) {
+						if (i == selectedCarIndex) {
+							price = carLoan.price[i];
+							downPayment = carLoan.downPayment[i];
+							installments = carLoan.installments[i];
+							description = carLoan.make[i] + " " + carLoan.model[i] +
+								" (" + to_string(carLoan.year[i]) + ")";
+							loanFound = true;
+							break;
+						}
 					}
 				}
-			}
-			else if (loanType == "scooter" && selectedScooterIndex != -1) {
-				for (int i = 0; i < scooterLoan.numberOfLines; i++) {
-					if (i == selectedScooterIndex) {
-						price = scooterLoan.price[i];
-						downPayment = scooterLoan.downPayment[i];
-						installments = scooterLoan.installments[i];
-						description = scooterLoan.make[i] + " " + scooterLoan.model[i] + " Scooter";
-						loanFound = true;
-						break;
+				else if (loanType == "scooter" && selectedScooterIndex != -1) {
+					for (int i = 0; i < scooterLoan.numberOfLines; i++) {
+						if (i == selectedScooterIndex) {
+							price = scooterLoan.price[i];
+							downPayment = scooterLoan.downPayment[i];
+							installments = scooterLoan.installments[i];
+							description = scooterLoan.make[i] + " " + scooterLoan.model[i] + " Scooter";
+							loanFound = true;
+							break;
+						}
 					}
 				}
-			}
-			else if (loanType == "personal" && !selectedPersonalDetails.empty()) {
-				stringstream detailStream(selectedPersonalDetails);
-				string detail;
-				string category, amountStr, downPaymentStr;
-				while (getline(detailStream, detail, ',')) {
-					size_t colonPos = detail.find(':');
-					if (colonPos != string::npos) {
-						string key = detail.substr(0, colonPos);
-						string value = detail.substr(colonPos + 1);
-						if (key == "Category") category = value;
-						else if (key == "Amount") amountStr = value;
-						else if (key == "DownPayment") downPaymentStr = value;
+				else if (loanType == "personal" && selectedPersonalIndex != -1) {
+					for (int i = 0; i < personalLoan.numberOfLines; i++) {
+						if (i == selectedPersonalIndex) {
+							description = personalLoan.category[i];
+							downPayment = personalLoan.downPayment[i];
+							installments = personalLoan.installments[i];
+							price = personalLoan.amount[i];
+							loanFound = true;
+							break;
+						}
 					}
 				}
-				PersonalLoan personalLoan;
-				personalLoan.initializePersonalLoan();
-				for (int i = 0; i < personalLoan.numberOfLines; i++) {
-					if (personalLoan.category[i] == category &&
-						to_string(personalLoan.amount[i]) == amountStr &&
-						to_string(personalLoan.downPayment[i]) == downPaymentStr) {
-						price = personalLoan.amount[i];
-						downPayment = personalLoan.downPayment[i];
-						installments = personalLoan.installments[i];
-						description = category + " Personal Loan";
-						loanFound = true;
-						break;
-					}
+
+				if (!loanFound || price == 0) {
+					cout << "Error: Could not find matching loan data for application " << appID << ".\n";
+					cout << "Loan Type: " << loanType << "\nIndex: ";
+					if (loanType == "home") cout << selectedHomeIndex;
+					else if (loanType == "car") cout << selectedCarIndex;
+					else if (loanType == "scooter") cout << selectedScooterIndex;
+					else if (loanType == "personal") cout << selectedPersonalIndex;
+					cout << endl;
+					continue;
 				}
-			}
-			if (!loanFound || price == 0) {
-				cout << "Error: Could not find matching loan data for application " << appID << ".\n";
-				cout << "Loan Type: " << loanType << ", Index: ";
-				if (loanType == "home") cout << selectedHomeIndex;
-				else if (loanType == "car") cout << selectedCarIndex;
-				else if (loanType == "scooter") cout << selectedScooterIndex;
-				cout << endl;
-				continue;
-			}
 
 			cout << "\n====================================\n";
 			cout << "   GENERATING PAYMENT PLAN\n";
@@ -1993,9 +1970,9 @@ void generateMonthlyPlan(const string& cnic) {
 					<< monthlyInstallment << "#"
 					<< totalAmountToPay << "#"
 					<< startMonth << "#"
-					<< "active" << "#"
-					<< totalAmountToPay << "#"
-					<< "0" << "#"
+					<< "active" << "#"  
+					<< totalAmountToPay << "#" 
+					<< "0" << "#" 
 					<< endl;
 
 				approvedFileOut.close();
@@ -2134,12 +2111,12 @@ void startBot() {
 
 	CarLoan carLoan;
 	carLoan.initializeCarLoan();
+	PersonalLoan personalLoan;
+	personalLoan.initializePersonalLoan();
 
 	while (true) {
-		bool showLoan = false;
-
 		cout << "You: ";
-		cin >> input;
+		cin>>input;
 		cout << endl;
 
 		if (input == "X" || input == "x") {
@@ -2158,12 +2135,11 @@ void startBot() {
 				if (area[0] >= '1' && area[0] <= '4') {
 					int homes = homeLoan.displayHomes(stoi(area));
 					if (homes > 0) {
-						cout << "\nWould you like an installment plan? Y/n  ";
+						cout << "\nWould you like to see installment plans? Y/n  ";
 						cin >> input;
 						cin.ignore(numeric_limits<streamsize>::max(), '\n');
 						if (input == "y" || input == "Y") {
 							homeLoan.generateInstallmentPlan(stoi(area));
-							showLoan = true;
 						}
 					}
 				}
@@ -2172,31 +2148,27 @@ void startBot() {
 				}
 			}
 		}
-		if (input == "P" || input == "p") {
-			PersonalLoan personalLoan;
-			personalLoan.initializePersonalLoan();
-			personalLoan.displayPersonalLoans();
-			cout << "\nWould you like an installment plan? Y/n  ";
-			cin >> input;
-			if (input == "y" || input == "Y") {
-				cout << "Select option (1-" << personalLoan.numberOfLines << "): ";
-				int opt;
-				cin >> opt;
-				personalLoan.generateInstallmentPlanForOption(opt);
-				showLoan = true;
-			}
-			cin.ignore();
-		}
+
 		if (input == "S" || input == "s") {
 			scooterLoan.displayScooters();
-			cout << "\nWould you like an installment plan? Y/n  ";
+			cout << "\nWould you like to see installment plans? Y/n  ";
 			cin >> input;
 			cin.ignore();
 			if (input == "y" || input == "Y") {
 				scooterLoan.generateInstallmentPlan();
-				showLoan = true;
 			}
 		}
+
+		if (input == "P" || input == "p") {
+			personalLoan.displayPersonalLoans();
+			cout << "\nWould you like to see installment plans? Y/n  ";
+			cin >> input;
+			if (input == "y" || input == "Y") {
+				personalLoan.generateInstallmentPlan();
+			}
+			cin.ignore();
+		}
+
 		if (input == "C" || input == "c") {
 			cout << "You: ";
 
@@ -2211,8 +2183,7 @@ void startBot() {
 				cin >> input;
 				cin.ignore(numeric_limits<streamsize>::max(), '\n');
 				if (input == "y" || input == "Y") {
-					carLoan.generateInstallmentPlanForOption(opt);
-					showLoan = true;
+				carLoan.generateInstallmentPlanForOption(opt);
 				}
 			}
 			else {
@@ -2289,6 +2260,7 @@ void startBot() {
 				applicant.inputImagePaths();
 				applicant.inputLoanTypeAndSelection();
 				applicant.displaySummary();
+
 				if (applicant.confirmSubmission()) {
 					applicant.saveToFile();
 				}
