@@ -1171,6 +1171,104 @@ private:
 		return true;
 	}
 
+	string buildRecordLine() const {
+		stringstream ss;
+		ss << applicationID << "#"
+			<< fullName << "#"
+			<< fatherName << "#"
+			<< postalAddress << "#"
+			<< contactNumber << "#"
+			<< email << "#"
+			<< cnic << "#"
+			<< cnicExpiryDate << "#"
+			<< employmentStatus << "#"
+			<< maritalStatus << "#"
+			<< gender << "#"
+			<< numberOfDependents << "#"
+			<< annualIncome << "#"
+			<< avgElectricityBill << "#"
+			<< currentElectricityBill << "#"
+			<< referee1.name << "#"
+			<< referee1.cnic << "#"
+			<< referee1.cnicIssueDate << "#"
+			<< referee1.phoneNumber << "#"
+			<< referee1.emailAddress << "#"
+			<< referee2.name << "#"
+			<< referee2.cnic << "#"
+			<< referee2.cnicIssueDate << "#"
+			<< referee2.phoneNumber << "#"
+			<< referee2.emailAddress << "#"
+			<< images.cnicFrontPath << "#"
+			<< images.cnicBackPath << "#"
+			<< images.electricityBillPath << "#"
+			<< images.salarySlipPath << "#"
+			<< applicationStatus << "#"
+			<< loanType << "#"
+			<< selectedMake << "#"
+			<< selectedArea << "#"
+			<< selectedHomeIndex << "#"
+			<< selectedCarIndex << "#"
+			<< selectedScooterIndex << "#"
+			<< selectedHomeDetails << "#"
+			<< selectedCarDetails << "#"
+			<< selectedScooterDetails << "#"
+			<< selectedPersonalIndex << "#"
+			<< selectedPersonalDetails << "#";
+		return ss.str();
+	}
+
+	void writeApplicationRecord(bool isFinalSubmission) {
+		if (applicationID.empty()) {
+			cout << "Error: Application ID is empty. Cannot save application.\n";
+			return;
+		}
+
+		vector<string> lines;
+		bool updated = false;
+
+		ifstream in("applications.txt");
+		if (in) {
+			string line;
+			while (getline(in, line)) {
+				if (line.empty()) continue;
+				stringstream ss(line);
+				string existingId;
+				getline(ss, existingId, '#');
+				if (existingId == applicationID) {
+					lines.push_back(buildRecordLine());
+					updated = true;
+				}
+				else {
+					lines.push_back(line);
+				}
+			}
+			in.close();
+		}
+
+		if (!updated) {
+			lines.push_back(buildRecordLine());
+		}
+
+		ofstream out("applications.txt");
+		if (!out) {
+			cout << "Error! Could not open applications.txt for writing!\n";
+			return;
+		}
+
+		for (const string& l : lines) {
+			out << l << endl;
+		}
+		out.close();
+
+		if (isFinalSubmission) {
+			cout << "\n====================================\n";
+			cout << "Application submitted successfully!\n";
+			cout << "Application ID: " << applicationID << endl;
+			cout << "Status: " << applicationStatus << endl;
+			cout << "====================================\n";
+		}
+	}
+
 public:
     string fullName, fatherName, postalAddress, contactNumber, email, cnic, cnicExpiryDate;
     string employmentStatus, maritalStatus, gender;
@@ -1817,7 +1915,116 @@ public:
 		cout << "Status: " << applicationStatus << endl;
 		cout << "====================================\n";
 	}
+	void initializeApplicationID() {
+		if (applicationID.empty()) {
+			applicationID = generateApplicationID();
+		}
+	}
+
+	void saveCheckpoint(const string& status) {
+		applicationStatus = status;   
+		writeApplicationRecord(false);
+	}
+
+	void saveToFile() {
+		applicationStatus = "submitted";
+		writeApplicationRecord(true);
+	}
 };
+
+bool loadIncompleteApplication(const string& appID, const string& cnic, LoanSeeker& applicant, string& statusOut) {
+	ifstream file("applications.txt");
+	if (!file) {
+		cout << "No applications file found.\n";
+		return false;
+	}
+
+	string line;
+	while (getline(file, line)) {
+		if (line.empty()) continue;
+
+		stringstream ss(line);
+		vector<string> tokens;
+		string token;
+
+		while (getline(ss, token, '#')) {
+			tokens.push_back(token);
+		}
+
+		if (tokens.size() < 30) {
+			continue;
+		}
+
+		string fileAppID = tokens[0];
+		string fileCNIC = tokens[6];
+		string status = tokens[29];
+
+		if (fileAppID == appID && fileCNIC == cnic) {
+			if (status != "C1" && status != "C2" && status != "C3") {
+				cout << "Application " << appID << " is already completed or not eligible for update.\n";
+				file.close();
+				return false;
+			}
+
+			statusOut = status;
+
+			applicant.applicationID = tokens[0];
+			applicant.fullName = tokens[1];
+			applicant.fatherName = tokens[2];
+			applicant.postalAddress = tokens[3];
+			applicant.contactNumber = tokens[4];
+			applicant.email = tokens[5];
+			applicant.cnic = tokens[6];
+			applicant.cnicExpiryDate = tokens[7];
+			applicant.employmentStatus = tokens[8];
+			applicant.maritalStatus = tokens[9];
+			applicant.gender = tokens[10];
+
+			applicant.numberOfDependents = tokens[11].empty() ? 0 : stoi(tokens[11]);
+			applicant.annualIncome = tokens[12].empty() ? 0.0f : stof(tokens[12]);
+			applicant.avgElectricityBill = tokens[13].empty() ? 0.0f : stof(tokens[13]);
+			applicant.currentElectricityBill = tokens[14].empty() ? 0.0f : stof(tokens[14]);
+
+			applicant.referee1.name = tokens[15];
+			applicant.referee1.cnic = tokens[16];
+			applicant.referee1.cnicIssueDate = tokens[17];
+			applicant.referee1.phoneNumber = tokens[18];
+			applicant.referee1.emailAddress = tokens[19];
+
+			applicant.referee2.name = tokens[20];
+			applicant.referee2.cnic = tokens[21];
+			applicant.referee2.cnicIssueDate = tokens[22];
+			applicant.referee2.phoneNumber = tokens[23];
+			applicant.referee2.emailAddress = tokens[24];
+
+			applicant.images.cnicFrontPath = tokens[25];
+			applicant.images.cnicBackPath = tokens[26];
+			applicant.images.electricityBillPath = tokens[27];
+			applicant.images.salarySlipPath = tokens[28];
+
+			applicant.applicationStatus = status;
+
+			if (tokens.size() > 30) applicant.loanType = tokens[30];
+			if (tokens.size() > 31) applicant.selectedMake = tokens[31];
+			applicant.selectedArea = (tokens.size() > 32 && !tokens[32].empty()) ? stoi(tokens[32]) : 0;
+			applicant.selectedHomeIndex = (tokens.size() > 33 && !tokens[33].empty()) ? stoi(tokens[33]) : -1;
+			applicant.selectedCarIndex = (tokens.size() > 34 && !tokens[34].empty()) ? stoi(tokens[34]) : -1;
+			applicant.selectedScooterIndex = (tokens.size() > 35 && !tokens[35].empty()) ? stoi(tokens[35]) : -1;
+			if (tokens.size() > 36) applicant.selectedHomeDetails = tokens[36];
+			if (tokens.size() > 37) applicant.selectedCarDetails = tokens[37];
+			if (tokens.size() > 38) applicant.selectedScooterDetails = tokens[38];
+			applicant.selectedPersonalIndex = (tokens.size() > 39 && !tokens[39].empty()) ? stoi(tokens[39]) : -1;
+			if (tokens.size() > 40) applicant.selectedPersonalDetails = tokens[40];
+
+			file.close();
+			return true;
+		}
+	}
+
+	cout << "No matching incomplete application found for the given ID and CNIC.\n";
+	file.close();
+	return false;
+}
 
 void checkApplicationsByCNIC(const string& cnic) {
 	ifstream file("applications.txt");
@@ -1829,7 +2036,6 @@ void checkApplicationsByCNIC(const string& cnic) {
 	int submitted = 0, approved = 0, rejected = 0;
 	string line;
 	vector<string> approvedAppIDs;
-
 	while (getline(file, line)) {
 		stringstream ss(line);
 		string token;
@@ -2404,34 +2610,103 @@ void startBot() {
 			cin >> input;
 			if (input == "Y" || input == "y") {
 				cin.ignore(numeric_limits<streamsize>::max(), '\n');
-				LoanSeeker applicant;
 
-				cout << "\n=== LOAN APPLICATION FORM ===\n\n";
+				cout << "\nPress 1 to start a NEW application.\n";
+				cout << "Press 2 to CONTINUE an existing incomplete application.\n";
+				cout << "Your choice: ";
+				string appChoice;
+				getline(cin, appChoice);
 
-				applicant.inputFullName();
-				applicant.inputFatherName();
-				applicant.inputPostalAddress();
-				applicant.inputContactNumber();
-				applicant.inputEmail();
-				applicant.inputCnic();
-				applicant.inputCnicExpiryDate();
-				applicant.inputEmploymentStatus();
-				applicant.inputMaritalStatus();
-				applicant.inputGender();
-				applicant.inputNumberOfDependents();
-				applicant.inputAnnualIncome();
-				applicant.inputAvgElectricityBill();
-				applicant.inputCurrentElectricityBill();
-				applicant.inputRefereeDetails();
-				applicant.inputImagePaths();
-				applicant.inputLoanTypeAndSelection();
-				applicant.displaySummary();
+				if (appChoice == "2") {
+					string appID, cnic;
+					cout << "Enter your previous Application ID: ";
+					getline(cin, appID);
+					cout << "Enter your CNIC (13 digits, no dashes): ";
+					getline(cin, cnic);
 
-				if (applicant.confirmSubmission()) {
-					applicant.saveToFile();
+					LoanSeeker applicant;
+					string status;
+					if (!loadIncompleteApplication(appID, cnic, applicant, status)) {
+						continue;
+					}
+
+					cout << "\nResuming your application (ID: " << applicant.applicationID
+						<< ") from checkpoint " << status << ".\n\n";
+
+					if (status == "C1") {
+						applicant.inputAnnualIncome();
+						applicant.inputAvgElectricityBill();
+						applicant.inputCurrentElectricityBill();
+						applicant.saveCheckpoint("C2");
+
+						applicant.inputRefereeDetails();
+						applicant.saveCheckpoint("C3");
+
+						applicant.inputImagePaths();
+						applicant.inputLoanTypeAndSelection();
+					}
+					else if (status == "C2") {
+						applicant.inputRefereeDetails();
+						applicant.saveCheckpoint("C3");
+
+						applicant.inputImagePaths();
+						applicant.inputLoanTypeAndSelection();
+					}
+					else if (status == "C3") {
+						applicant.inputImagePaths();
+						applicant.inputLoanTypeAndSelection();
+					}
+
+					applicant.displaySummary();
+
+					if (applicant.confirmSubmission()) {
+						applicant.saveToFile();
+					}
+					else {
+						cout << "\nApplication not submitted. You can continue later using your Application ID.\n";
+					}
 				}
 				else {
-					cout << "\nApplication cancelled. Data not saved.\n";
+					LoanSeeker applicant;
+
+					cout << "\n=== LOAN APPLICATION FORM ===\n\n";
+
+					applicant.inputFullName();
+					applicant.inputFatherName();
+					applicant.inputPostalAddress();
+					applicant.inputContactNumber();
+					applicant.inputEmail();
+					applicant.inputCnic();
+					applicant.inputCnicExpiryDate();
+					applicant.inputEmploymentStatus();
+					applicant.inputMaritalStatus();
+					applicant.inputGender();
+					applicant.inputNumberOfDependents();
+
+					applicant.initializeApplicationID();
+					cout << "\nYour Application ID is: " << applicant.applicationID << endl;
+					cout << "Please keep it safe to continue your application later if needed.\n\n";
+
+					applicant.saveCheckpoint("C1");
+
+					applicant.inputAnnualIncome();
+					applicant.inputAvgElectricityBill();
+					applicant.inputCurrentElectricityBill();
+					applicant.saveCheckpoint("C2");
+
+					applicant.inputRefereeDetails();
+					applicant.saveCheckpoint("C3");
+
+					applicant.inputImagePaths();
+					applicant.inputLoanTypeAndSelection();
+					applicant.displaySummary();
+
+					if (applicant.confirmSubmission()) {
+						applicant.saveToFile();
+					}
+					else {
+						cout << "\nApplication not submitted. Your data up to the last checkpoint has been saved.\n";
+					}
 				}
 			}
 			else {
