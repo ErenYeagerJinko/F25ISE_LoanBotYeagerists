@@ -1841,6 +1841,71 @@ void checkApplicationsByCNIC(const string& cnic) {
 				cout << "Unexpected status: " << status << endl;
 			}
 		}
+		if (approved > 0) {
+			cout << "\n--- APPROVED APPLICATION DETAILS ---\n";
+	
+			ifstream approvedFile("approved.txt");
+			if (approvedFile) {
+				bool foundPaymentPlans = false;
+	
+				while (getline(approvedFile, line)) {
+					stringstream ss(line);
+					string token;
+					int fieldCount = 0;
+					string approvedAppID, approvedCNIC, loanType, description;
+					int price, downPayment, installments, monthlyInstallment, totalAmount, startMonth;
+					string paymentStatus;
+					int remainingAmount, paidAmount;
+	
+					while (getline(ss, token, '#')) {
+						fieldCount++;
+						switch (fieldCount) {
+						case 1: approvedAppID = token; break;
+						case 2: approvedCNIC = token; break;
+						case 3: loanType = token; break;
+						case 4: description = token; break;
+						case 5: price = stoi(token); break;
+						case 6: downPayment = stoi(token); break;
+						case 7: installments = stoi(token); break;
+						case 8: monthlyInstallment = stoi(token); break;
+						case 9: totalAmount = stoi(token); break;
+						case 10: startMonth = stoi(token); break;
+						case 11: paymentStatus = token; break;
+						case 12: remainingAmount = stoi(token); break;
+						case 13: paidAmount = stoi(token); break;
+						}
+					}
+	
+					if (approvedCNIC == cnic) {
+						foundPaymentPlans = true;
+						cout << "\nApplication ID: " << approvedAppID << endl;
+						cout << "Loan Type: " << loanType << endl;
+						cout << "Description: " << description << endl;
+						cout << "Total Price: " << price << endl;
+						cout << "Down Payment: " << downPayment << endl;
+						cout << "Monthly Installment: " << monthlyInstallment << endl;
+						cout << "Total Loan Amount: " << totalAmount << endl;
+						cout << "Installment Period: " << installments << " months" << endl;
+						cout << "Starting Month: " << startMonth << endl;
+						cout << "Payment Status: " << paymentStatus << endl;
+						cout << "Amount Paid: " << paidAmount << endl;
+						cout << "Remaining Amount: " << remainingAmount << endl;
+	
+						double progress = (totalAmount > 0) ? ((double)paidAmount / totalAmount) * 100 : 0;
+						cout << "Payment Progress: " << progress << "%" << endl;
+						cout << "------------------------" << endl;
+					}
+				}
+				approvedFile.close();
+	
+				if (!foundPaymentPlans) {
+					cout << "No payment plans generated for approved applications.\n";
+				}
+			}
+			else {
+				cout << "No payment plans found for approved applications.\n";
+			}
+		}
 	}
 	file.close();
 
@@ -2393,3 +2458,4 @@ void startBot() {
 		}
 	}
 }
+
