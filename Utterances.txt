@@ -13,3 +13,4 @@ E#Please enter CNIC to see progress on loans approved.
 L#Please fill the following loan applicant form.
 F#Please press A if you want to view loan menu. Press L to fill loan applicant form. Press B to see count of existing loan applications (approved, submitted, rejected). Press D to generate installment plans for approved loan applications. Press E to see progress on loans approved.
 G#Entered General Conversation Mode. Press X to return.
+P#You are applying for personal loan. Available options are as follows.
