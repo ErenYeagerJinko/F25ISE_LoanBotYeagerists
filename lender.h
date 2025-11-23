@@ -36,6 +36,8 @@ struct Application {
     string selectedHomeDetails;
     string selectedCarDetails;
     string selectedScooterDetails;
+    string selectedPersonalIndex;
+    string selectedPersonalDetails;
 };
 
 vector<Application> loadApplications() {
@@ -65,7 +67,8 @@ vector<Application> loadApplications() {
             &app.cnicFrontPath, &app.cnicBackPath, &app.electricityBillPath, &app.salarySlipPath,
             &app.applicationStatus, &app.loanType, &app.selectedMake, &app.selectedArea,
             &app.selectedHomeIndex, &app.selectedCarIndex, &app.selectedScooterIndex,
-            &app.selectedHomeDetails, &app.selectedCarDetails, &app.selectedScooterDetails
+            &app.selectedHomeDetails, &app.selectedCarDetails, &app.selectedScooterDetails,
+            &app.selectedPersonalIndex, &app.selectedPersonalDetails
         };
 
         for (size_t i = 0; i < fields.size(); i++) {
@@ -156,6 +159,23 @@ void displayApplicationPlain(const Application& app) {
             cout << "Scooter Details: N/A\n";
         }
     }
+    else if (app.loanType == "personal") {
+        if (!app.selectedPersonalDetails.empty()) {
+            stringstream ss(app.selectedPersonalDetails);
+            string item;
+            while (getline(ss, item, ',')) {
+                size_t colonPos = item.find(':');
+                if (colonPos != string::npos) {
+                    string key = item.substr(0, colonPos);
+                    string value = item.substr(colonPos + 1);
+                    cout << key << ": " << value << "\n";
+                }
+            }
+        }
+        else {
+            cout << "Personal Details: N/A\n";
+        }
+    }
 
     cout << "\nReferee 1 Name: " << app.referee1Name << "\n";
     cout << "Referee 1 CNIC: " << app.referee1Cnic << "\n";
@@ -209,7 +229,7 @@ void updateApplicationStatus(const string& appID, const string& newStatus) {
             app.cnicFrontPath, app.cnicBackPath, app.electricityBillPath, app.salarySlipPath,
             app.applicationStatus, app.loanType, app.selectedMake, app.selectedArea, app.selectedHomeIndex,
             app.selectedCarIndex, app.selectedScooterIndex, app.selectedHomeDetails, app.selectedCarDetails,
-            app.selectedScooterDetails
+            app.selectedScooterDetails, app.selectedPersonalIndex, app.selectedPersonalDetails
         };
 
         for (size_t i = 0; i < fields.size(); i++) {
