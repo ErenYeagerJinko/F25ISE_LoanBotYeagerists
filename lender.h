@@ -79,7 +79,9 @@ vector<Application> loadApplications() {
                 *(fields[i]) = "";
             }
         }
-        apps.push_back(app);
+        if (app.applicationStatus == "submitted" || app.applicationStatus == "approved" || app.applicationStatus == "rejected") {
+            apps.push_back(app);
+        }
     }
     file.close();
     return apps;
