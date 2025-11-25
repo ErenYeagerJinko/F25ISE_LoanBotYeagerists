@@ -126,37 +126,30 @@ public:
 
 	void loadConversationFromFile(const string& filename) {
 		ifstream file(filename);
-
 		if (!file.is_open()) {
 			cout << "Error opening file: " << filename << endl;
 			return;
 		}
 
-		int lineIndex = 0;
 		string line;
-		bool isUserInput = true;
+		bool isHuman1 = true;
 
+		int i = 0;
 		while (getline(file, line)) {
 			size_t colonPos = line.find(':');
 			if (colonPos != string::npos) {
-				string trimmedLine = line.substr(colonPos + 2);
-
-				if (isUserInput) {
-					transform(trimmedLine.begin(), trimmedLine.end(), trimmedLine.begin(), ::tolower);
-					if (lineIndex < numberOfLines) {
-						userInput[lineIndex] = trimmedLine;
-					}
+				string content = line.substr(colonPos + 2);
+				transform(content.begin(), content.end(), content.begin(), ::tolower);
+				if (isHuman1) {
+					userInput[i] = content;
 				}
 				else {
-					if (lineIndex < numberOfLines) {
-						systemResponse[lineIndex] = trimmedLine;
-					}
-					lineIndex++;
+					systemResponse[i] = content;
+					i++;
 				}
+				isHuman1 = !isHuman1;
 			}
-			isUserInput = !isUserInput;
 		}
-
 		file.close();
 	}
 
@@ -170,37 +163,51 @@ public:
 		return tokens;
 	}
 
-	double calculateIoU(const vector<string>& userTokens, const vector<string>& responseTokens) {
-		set<string> userSet(userTokens.begin(), userTokens.end());
-		set<string> responseSet(responseTokens.begin(), responseTokens.end());
+	double calculateIoU(const vector<string>& tokens1, const vector<string>& tokens2) {
+		if (tokens1.empty() && tokens2.empty()) return 0.0;
+		if (tokens1.empty() || tokens2.empty()) return 0.0;
+
+		set<string> set1(tokens1.begin(), tokens1.end());
+		set<string> set2(tokens2.begin(), tokens2.end());
 
 		set<string> intersection;
-		set_intersection(userSet.begin(), userSet.end(), responseSet.begin(), responseSet.end(),
+		set_intersection(set1.begin(), set1.end(),
+			set2.begin(), set2.end(),
 			inserter(intersection, intersection.begin()));
 
 		set<string> unionSet;
-		set_union(userSet.begin(), userSet.end(), responseSet.begin(), responseSet.end(),
+		set_union(set1.begin(), set1.end(),
+			set2.begin(), set2.end(),
 			inserter(unionSet, unionSet.begin()));
 
 		return static_cast<double>(intersection.size()) / unionSet.size();
 	}
 
 	string getBestResponse(const string& userInputText) {
-		vector<string> userTokens = tokenize(userInputText);
-		double bestIoU = 0.0;
-		string bestResponse = "";
 
-		for (int i = 0; i < numberOfLines; i++) {
-			vector<string> responseTokens = tokenize(systemResponse[i]);
-			double currentIoU = calculateIoU(userTokens, responseTokens);
+		string userInputLower = userInputText;
+		transform(userInputLower.begin(), userInputLower.end(), userInputLower.begin(), ::tolower);
+
+		vector<string> userTokens = tokenize(userInputLower);
+		double bestIoU = 0.0;
+		int bestIndex = -1;
+
+		for (size_t i = 0; i < numberOfLines; i++) {
+			vector<string> human1Tokens = tokenize(userInput[i]);
+			double currentIoU = calculateIoU(userTokens, human1Tokens);
 
 			if (currentIoU > bestIoU) {
 				bestIoU = currentIoU;
-				bestResponse = systemResponse[i];
+				bestIndex = i;
 			}
 		}
 
-		return bestResponse;
+		if (bestIndex != -1 && bestIoU > 0.0) {
+			return systemResponse[bestIndex];
+		}
+		else {
+			return "I'm not sure how to respond to that.";
+		}
 	}
 };
 
@@ -2795,9 +2802,9 @@ void startBot() {
 			generalConversation.loadConversationFromFile("human_chat_corpus.txt");
 			string input = "";
 			cout << "Entered General Conversation Mode. Press X to return.\n";
+			cin.ignore(numeric_limits<streamsize>::max(), '\n');
 			while (true) {
 				cout << "\nYou: ";
-				cin.ignore(numeric_limits<streamsize>::max(), '\n');
 				getline(cin, input);
 				input = trim(input);
 				if (input == "X" || input == "x") {
