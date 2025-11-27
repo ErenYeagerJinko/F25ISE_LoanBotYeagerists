@@ -16,6 +16,10 @@
 #include <ctime>
 using namespace std;
 
+void initializeRandomSeed() {
+	srand(time(0));
+}
+
 int numberOfLinesInFile(string fileName) {
 	ifstream file(fileName);
 	if (!file) {
@@ -104,6 +108,11 @@ public:
 	}
 };
 
+struct ConversationPair {
+	string question;
+	string response;
+};
+
 class Conversation {
 public:
 	string* userInput, * systemResponse;
@@ -124,90 +133,157 @@ public:
 		userInput = systemResponse = nullptr;
 	}
 
-	void loadConversationFromFile(const string& filename) {
-		ifstream file(filename);
-		if (!file.is_open()) {
-			cout << "Error opening file: " << filename << endl;
-			return;
-		}
+	vector<string> tokenize(const string& text) {
+		vector<string> tokens;
+		string word = "";
 
-		string line;
-		bool isHuman1 = true;
+		for (int i = 0; i < text.length(); i++) {
+			char c = tolower(text[i]);
 
-		int i = 0;
-		while (getline(file, line)) {
-			size_t colonPos = line.find(':');
-			if (colonPos != string::npos) {
-				string content = line.substr(colonPos + 2);
-				transform(content.begin(), content.end(), content.begin(), ::tolower);
-				if (isHuman1) {
-					userInput[i] = content;
+			if ((c >= 'a' && c <= 'z') || (c >= '0' && c <= '9')) {
+				word += c;
+			}
+			else if (c == ' ' || c == '\t' || c == '\n') {
+				if (!word.empty()) {
+					tokens.push_back(word);
+					word = "";
 				}
-				else {
-					systemResponse[i] = content;
-					i++;
-				}
-				isHuman1 = !isHuman1;
 			}
 		}
-		file.close();
-	}
 
-	vector<string> tokenize(const string& str) {
-		vector<string> tokens;
-		stringstream ss(str);
-		string token;
-		while (ss >> token) {
-			tokens.push_back(token);
+		if (!word.empty()) {
+			tokens.push_back(word);
 		}
+
 		return tokens;
 	}
 
-	double calculateIoU(const vector<string>& tokens1, const vector<string>& tokens2) {
-		if (tokens1.empty() && tokens2.empty()) return 0.0;
-		if (tokens1.empty() || tokens2.empty()) return 0.0;
 
-		set<string> set1(tokens1.begin(), tokens1.end());
-		set<string> set2(tokens2.begin(), tokens2.end());
+	double calculateIoU(const string& userInput, const string& corpusLine) {
+		vector<string> tokensUser = tokenize(userInput);
+		vector<string> tokensCorpus = tokenize(corpusLine);
 
-		set<string> intersection;
-		set_intersection(set1.begin(), set1.end(),
-			set2.begin(), set2.end(),
-			inserter(intersection, intersection.begin()));
+		if (tokensUser.empty() || tokensCorpus.empty()) {
+			return 0.0;
+		}
 
-		set<string> unionSet;
-		set_union(set1.begin(), set1.end(),
-			set2.begin(), set2.end(),
-			inserter(unionSet, unionSet.begin()));
-
-		return static_cast<double>(intersection.size()) / unionSet.size();
-	}
-
-	string getBestResponse(const string& userInputText) {
-
-		string userInputLower = userInputText;
-		transform(userInputLower.begin(), userInputLower.end(), userInputLower.begin(), ::tolower);
-
-		vector<string> userTokens = tokenize(userInputLower);
-		double bestIoU = 0.0;
-		int bestIndex = -1;
-
-		for (size_t i = 0; i < numberOfLines; i++) {
-			vector<string> human1Tokens = tokenize(userInput[i]);
-			double currentIoU = calculateIoU(userTokens, human1Tokens);
-
-			if (currentIoU > bestIoU) {
-				bestIoU = currentIoU;
-				bestIndex = i;
+		int intersection = 0;
+		for (int i = 0; i < tokensUser.size(); i++) {
+			for (int j = 0; j < tokensCorpus.size(); j++) {
+				if (tokensUser[i] == tokensCorpus[j]) {
+					intersection++;
+					break;
+				}
 			}
 		}
 
-		if (bestIndex != -1 && bestIoU > 0.0) {
-			return systemResponse[bestIndex];
+		vector<string> unionTokens;
+
+		for (int i = 0; i < tokensUser.size(); i++) {
+			unionTokens.push_back(tokensUser[i]);
 		}
-		else {
+
+		for (int i = 0; i < tokensCorpus.size(); i++) {
+			bool alreadyExists = false;
+			for (int j = 0; j < unionTokens.size(); j++) {
+				if (tokensCorpus[i] == unionTokens[j]) {
+					alreadyExists = true;
+					break;
+				}
+			}
+			if (!alreadyExists) {
+				unionTokens.push_back(tokensCorpus[i]);
+			}
+		}
+
+		int unionSize = unionTokens.size();
+
+		if (unionSize == 0) {
+			return 0.0;
+		}
+
+		return (double)intersection / (double)unionSize;
+	}
+
+	vector<ConversationPair> loadConversationFromFile(const string& filename) {
+		vector<ConversationPair> corpus;
+		ifstream file(filename);
+
+		if (!file.is_open()) {
+			cerr << "Error: Cannot open " << filename << endl;
+			return corpus;
+		}
+
+		string line;
+		string currentHuman1 = "";
+
+		while (getline(file, line)) {
+			if (line.find("Human 1:") == 0) {
+				currentHuman1 = line.substr(9);
+			}
+			else if (line.find("Human 2:") == 0 && !currentHuman1.empty()) {
+				ConversationPair pair;
+				pair.question = currentHuman1;
+				pair.response = line.substr(9);
+
+				corpus.push_back(pair);
+
+				currentHuman1 = "";
+			}
+		}
+
+		file.close();
+		return corpus;
+	}
+
+	string getBestResponse(const string& userInput) {
+		vector<ConversationPair> corpus = loadConversationFromFile("human_chat_corpus.txt");
+		if (corpus.empty()) {
+			return "Conversation database not loaded.";
+		}
+
+		struct Match {
+			string response;
+			string question;
+			double iou;
+			int index;
+		};
+
+		vector<Match> allMatches;
+
+		for (int i = 0; i < corpus.size(); i++) {
+			double iou = calculateIoU(userInput, corpus[i].question);
+
+			if (iou > 0.1) {
+				Match m;
+				m.response = corpus[i].response;
+				m.question = corpus[i].question;
+				m.iou = iou;
+				m.index = i;
+				allMatches.push_back(m);
+			}
+		}
+
+		if (allMatches.empty()) {
 			return "I'm not sure how to respond to that.";
 		}
+
+		double maxIoU = 0.0;
+		for (int i = 0; i < allMatches.size(); i++) {
+			if (allMatches[i].iou > maxIoU) {
+				maxIoU = allMatches[i].iou;
+			}
+		}
+
+		vector<Match> bestMatches;
+		for (int i = 0; i < allMatches.size(); i++) {
+			if (allMatches[i].iou == maxIoU) {
+				bestMatches.push_back(allMatches[i]);
+			}
+		}
+
+		int randomIndex = rand() % bestMatches.size();
+		return bestMatches[randomIndex].response;
 	}
 };
 
@@ -2825,3 +2901,4 @@ void startBot() {
 		}
 	}
 }
+
