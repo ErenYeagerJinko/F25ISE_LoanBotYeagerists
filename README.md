@@ -1,6 +1,4 @@
-                                                                                    ISE Project Documentation
-                                                                                        Team: Yeagerist++
-
+ISE PROJECT DOCUMENTATION ( TEAM YEAGERISTS ++ )
   Members:
     Abdul Ahad (24L-3029)
     M. Anas (24L-3004)
@@ -10,6 +8,7 @@
 
 Project Features:
 The Loan Processing System we built had two main user roles:
+
 Applicants – 		can apply for loans (home, car, scooter, personal), save/continue applications, upload documents, and check loan status.
 Lenders    – 		can review submitted applications, approve/reject them, and manage loan records.
 
