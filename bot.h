@@ -1703,37 +1703,27 @@ public:
 	void inputImagePaths(string applicationID) {
 		cout << "\n=== DOCUMENT IMAGES ===\n";
 
-
 		string dataFolder = "./data";
 		string appFolder = dataFolder + "/" + applicationID;
 
 		createDirectory(dataFolder);
 		createDirectory(appFolder);
 
-		cout << "Your Application ID is: " << applicationID << endl;
-		cout << "All images will be saved in folder: " << appFolder << endl;
-		cout << "\nPlease provide the FULL FILE PATHS for the following documents:\n";
-		cout << "(They will be copied automatically into: " << appFolder << ")\n\n";
+		cout << "Your Application ID is: " << applicationID << "\n";
+		cout << "All images will be saved in: " << appFolder << "\n\n";
 
-		string filename;
-		string sourcePath;
-		string destPath;
+		string sourcePath, filename, renameImg, destPath;
 
 		while (true) {
-			cout << "Enter file path for CNIC Front (e.g. C:/docs/cnic_front.jpg): ";
+			cout << "Enter file path for CNIC Front: ";
 			getline(cin, sourcePath);
 			sourcePath = trim(sourcePath);
 
-			if (!verifyImageFileExistence(sourcePath)) {
-				cout << "File does not exist. Try again.\n";
-				continue;
-			}
-			if (!isImageFile(sourcePath)) {
-				cout << "Not a valid image file. Try again.\n";
-				continue;
-			}
+			if (!verifyImageFileExistence(sourcePath)) { cout << "File does not exist.\n"; continue; }
+			if (!isImageFile(sourcePath)) { cout << "Invalid image.\n"; continue; }
 
-			filename = sourcePath.substr(sourcePath.find_last_of("/\\") + 1);
+			renameImg = sourcePath.substr(sourcePath.find_last_of("."));
+			filename = "CNIC_Front" + renameImg;
 			destPath = appFolder + "/" + filename;
 
 			copyImage(sourcePath, destPath);
@@ -1746,16 +1736,11 @@ public:
 			getline(cin, sourcePath);
 			sourcePath = trim(sourcePath);
 
-			if (!verifyImageFileExistence(sourcePath)) {
-				cout << "File does not exist. Try again.\n";
-				continue;
-			}
-			if (!isImageFile(sourcePath)) {
-				cout << "Not a valid image file. Try again.\n";
-				continue;
-			}
+			if (!verifyImageFileExistence(sourcePath)) { cout << "File does not exist.\n"; continue; }
+			if (!isImageFile(sourcePath)) { cout << "Invalid image.\n"; continue; }
 
-			filename = sourcePath.substr(sourcePath.find_last_of("/\\") + 1);
+			renameImg = sourcePath.substr(sourcePath.find_last_of("."));
+			filename = "CNIC_Back" + renameImg;
 			destPath = appFolder + "/" + filename;
 
 			copyImage(sourcePath, destPath);
@@ -1764,20 +1749,15 @@ public:
 		}
 
 		while (true) {
-			cout << "Enter file path for Recent Electricity Bill: ";
+			cout << "Enter file path for Electricity Bill: ";
 			getline(cin, sourcePath);
 			sourcePath = trim(sourcePath);
 
-			if (!verifyImageFileExistence(sourcePath)) {
-				cout << "File does not exist. Try again.\n";
-				continue;
-			}
-			if (!isImageFile(sourcePath)) {
-				cout << "Not a valid image file. Try again.\n";
-				continue;
-			}
+			if (!verifyImageFileExistence(sourcePath)) { cout << "File does not exist.\n"; continue; }
+			if (!isImageFile(sourcePath)) { cout << "Invalid image.\n"; continue; }
 
-			filename = sourcePath.substr(sourcePath.find_last_of("/\\") + 1);
+			renameImg = sourcePath.substr(sourcePath.find_last_of("."));
+			filename = "Electricity_Bill" + renameImg;
 			destPath = appFolder + "/" + filename;
 
 			copyImage(sourcePath, destPath);
@@ -1786,20 +1766,15 @@ public:
 		}
 
 		while (true) {
-			cout << "Enter file path for Salary Slip/Bank Statement: ";
+			cout << "Enter file path for Salary Slip / Bank Statement: ";
 			getline(cin, sourcePath);
 			sourcePath = trim(sourcePath);
 
-			if (!verifyImageFileExistence(sourcePath)) {
-				cout << "File does not exist. Try again.\n";
-				continue;
-			}
-			if (!isImageFile(sourcePath)) {
-				cout << "Not a valid image file. Try again.\n";
-				continue;
-			}
+			if (!verifyImageFileExistence(sourcePath)) { cout << "File does not exist.\n"; continue; }
+			if (!isImageFile(sourcePath)) { cout << "Invalid image.\n"; continue; }
 
-			filename = sourcePath.substr(sourcePath.find_last_of("/\\") + 1);
+			renameImg = sourcePath.substr(sourcePath.find_last_of("."));
+			filename = "Salary_Slip" + renameImg;
 			destPath = appFolder + "/" + filename;
 
 			copyImage(sourcePath, destPath);
@@ -2901,4 +2876,5 @@ void startBot() {
 		}
 	}
 }
+
 
