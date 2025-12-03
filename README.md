@@ -1,4 +1,4 @@
-									ISE PROJECT DOCUMENTATION ( TEAM YEAGERISTS ++ )
+											ISE PROJECT DOCUMENTATION ( TEAM YEAGERISTS ++ )
   Members:
     Abdul Ahad (24L-3029)
     M. Anas (24L-3004)
@@ -129,9 +129,9 @@ Hangzhou DeepSeek:   AI tool to create UML diagram of the project and work break
 User Manual:
   ChatBot: 
   
-Command	      Function
-     H		                  View available homes by area (1-4)
-     S		                  View available scooters
+Command	                    Function
+     H		                View available homes by area (1-4)
+     S		                View available scooters
      P	                    View personal loan options
      C	                    View available cars by make (1 or 2)
      L	                    Start a new loan application
