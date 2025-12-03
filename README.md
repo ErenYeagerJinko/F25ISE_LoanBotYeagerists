@@ -10,14 +10,15 @@
 
 Project Features:
 The Loan Processing System we built had two main user roles:
-Applicants – can apply for loans (home, car, scooter, personal), save/continue applications, upload documents, and check loan status.
-Lenders – can review submitted applications, approve/reject them, and manage loan records.
+Applicants – 		can apply for loans (home, car, scooter, personal), save/continue applications, upload documents, and check loan status.
+Lenders    – 		can review submitted applications, approve/reject them, and manage loan records.
+
 Additional features:
 Chabot interface for loan inquiries, application status checks, and general conversation.
-Checkpoint system – applicants can save and resume incomplete applications.
+Checkpoint system            – applicants can save and resume incomplete applications.
 Payment plan generator for approved loans.
-Document/image handling – upload and storage of CNIC, bills, salary slips.
-Loan catalog browsing – view available homes, cars, scooters, and personal loans with installment plans.
+Document/image handling      – upload and storage of CNIC, bills, salary slips.
+Loan catalog browsing        – view available homes, cars, scooters, and personal loans with installment plans.
 Application tracking by CNIC – view submitted, approved, and rejected applications.
 
 You're absolutely right. Let me correct that approach. Only classes and standalone functions (not belonging to any class) are modules. Functions inside classes are part of their class module.
